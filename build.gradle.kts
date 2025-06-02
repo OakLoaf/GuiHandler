@@ -2,7 +2,6 @@ plugins {
     `java-library`
     `maven-publish`
     id("com.gradleup.shadow") version("8.3.0")
-    id("xyz.jpenilla.run-paper") version("2.2.4")
 }
 
 group = "org.lushplugins"
@@ -13,6 +12,7 @@ repositories {
     mavenCentral()
     maven("https://oss.sonatype.org/content/groups/public/")
     maven("https://repo.papermc.io/repository/maven-public/") // Paper
+    maven("https://repo.lushplugins.org/snapshots") // ChatColorHandler
 }
 
 dependencies {
@@ -22,6 +22,11 @@ dependencies {
     // Soft Dependencies
 
     // Libraries
+    implementation("org.lushplugins:ChatColorHandler:5.1.3")
+    implementation("org.lushplugins.lushlib:skullcreator:0.10.74")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.19.0") // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.19.0") // Jackson
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0") // Jackson
 }
 
 java {
