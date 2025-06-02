@@ -1,7 +1,7 @@
 package org.lushplugins.guihandler.gui;
 
 import com.google.common.collect.TreeMultimap;
-import org.lushplugins.guihandler.button.ButtonProvider;
+import org.lushplugins.guihandler.slot.ButtonProvider;
 
 import java.util.*;
 

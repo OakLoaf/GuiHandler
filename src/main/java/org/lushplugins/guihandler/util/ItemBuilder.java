@@ -1,4 +1,4 @@
-package org.lushplugins.guihandler.icon;
+package org.lushplugins.guihandler.util;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -9,14 +9,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.Nullable;
 import org.lushplugins.chatcolorhandler.ChatColorHandler;
-import org.lushplugins.guihandler.util.JsonPropertyWithDefault;
 import org.lushplugins.lushlib.skullcreator.SkullCreatorAPI;
 
 import java.util.*;
 import java.util.function.Function;
 
 @SuppressWarnings("FieldMayBeFinal")
-public class Icon {
+public class ItemBuilder {
 
     @JsonPropertyWithDefault
     private Material material = null;

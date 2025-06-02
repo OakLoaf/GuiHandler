@@ -2,11 +2,11 @@ package org.lushplugins.guihandler;
 
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.lushplugins.guihandler.button.Button;
-import org.lushplugins.guihandler.button.ButtonProvider;
+import org.lushplugins.guihandler.slot.Button;
+import org.lushplugins.guihandler.slot.ButtonProvider;
 import org.lushplugins.guihandler.gui.Gui;
-import org.lushplugins.guihandler.gui.GuiProvider;
 import org.lushplugins.guihandler.listener.InventoryListener;
 
 import java.util.*;
@@ -15,7 +15,6 @@ public final class GuiHandler {
     private final JavaPlugin plugin;
     private final List<Listener> listeners = new ArrayList<>();
     private final Map<UUID, Gui> openGuis = new HashMap<>();
-    private final Map<String, GuiProvider> guis = new HashMap<>();
     private final Map<String, ButtonProvider> buttons;
 
     private GuiHandler(JavaPlugin plugin, Map<String, ButtonProvider> buttons) {
@@ -29,20 +28,20 @@ public final class GuiHandler {
         return plugin;
     }
 
+    public Gui.Builder guiBuilder(InventoryType inventoryType) {
+        return Gui.builder(this.plugin, inventoryType);
+    }
+
+    public Gui.Builder guiBuilder(int size) {
+        return Gui.builder(this.plugin, size);
+    }
+
     public Gui getOpenGui(UUID uuid) {
         return this.openGuis.get(uuid);
     }
 
     public void removeOpenGui(UUID uuid) {
         this.openGuis.remove(uuid);
-    }
-
-    public GuiProvider getGuiProvider(String id) {
-        return this.guis.get(id);
-    }
-
-    public void registerGui(String id, GuiProvider guiProvider) {
-        this.guis.put(id, guiProvider);
     }
 
     public ButtonProvider getButtonProvider(String id) {

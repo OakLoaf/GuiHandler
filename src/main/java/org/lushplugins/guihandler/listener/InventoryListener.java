@@ -52,7 +52,7 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        gui.onClose(gui, event, this.guiHandler);
         this.guiHandler.removeOpenGui(player.getUniqueId());
+        gui.onClose(event);
     }
 }

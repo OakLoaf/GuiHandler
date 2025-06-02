@@ -1,4 +1,4 @@
-package org.lushplugins.guihandler.button;
+package org.lushplugins.guihandler.slot;
 
 @FunctionalInterface
 public interface ButtonProvider {

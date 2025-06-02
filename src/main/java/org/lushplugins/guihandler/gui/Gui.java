@@ -8,41 +8,51 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.lushplugins.chatcolorhandler.ModernChatColorHandler;
-import org.lushplugins.guihandler.GuiHandler;
-import org.lushplugins.guihandler.button.Button;
-import org.lushplugins.guihandler.button.ButtonProvider;
+import org.lushplugins.guihandler.slot.ButtonProvider;
 import org.lushplugins.guihandler.slot.Slot;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class Gui {
     private final Inventory inventory;
-    private final Player player;
     private final Slot[] slots;
+    private final Player player;
+    private final boolean locked;
 
-    public Gui(int size, Component component, Player player) {
-        this.inventory = Bukkit.getServer().createInventory(null, size, component);
+    private Gui(JavaPlugin plugin, Inventory inventory, Slot[] slots, Player player, boolean locked) {
+        this.inventory = inventory;
+        this.slots = slots;
         this.player = player;
-        this.slots = new Slot[size];
+        this.locked = locked;
+
+        open(plugin);
     }
 
-    public Gui(InventoryType inventoryType, Component component, Player player) {
-        this.inventory = Bukkit.getServer().createInventory(null, inventoryType, component);
-        this.player = player;
-        this.slots = new Slot[inventoryType.getDefaultSize()];
+    public Gui(JavaPlugin plugin, int size, Component component, Player player, boolean locked) {
+        this(
+            plugin,
+            Bukkit.getServer().createInventory(null, size, component),
+            new Slot[size],
+            player,
+            locked
+        );
     }
 
-    public Gui(int size, String title, Player player) {
-        this(size, ModernChatColorHandler.translate(title), player);
+    public Gui(JavaPlugin plugin, InventoryType inventoryType, Component component, Player player, boolean locked) {
+        this(
+            plugin,
+            Bukkit.getServer().createInventory(null, inventoryType, component),
+            new Slot[inventoryType.getDefaultSize()],
+            player,
+            locked
+        );
     }
 
-    public Gui(InventoryType inventoryType, String title, Player player) {
-        this(inventoryType, ModernChatColorHandler.translate(title), player);
-    }
-
-    public Gui(GuiLayer layer, String title, Player player) {
-        this(layer.getSize(), title, player);
+    public Gui(JavaPlugin plugin, GuiLayer layer, Component title, Player player, boolean locked) {
+        this(plugin, layer.getSize(), title, player, locked);
         applyLayer(layer);
     }
 
@@ -54,12 +64,12 @@ public class Gui {
         return player;
     }
 
-    public Slot getSlot(int slot) {
-        return this.slots[slot] != null ? this.slots[slot] : new Slot(slot, ' ');
-    }
-
     public Slot[] getSlots() {
         return slots;
+    }
+
+    public Slot getSlot(int slot) {
+        return this.slots[slot] != null ? this.slots[slot] : new Slot(slot, ' ');
     }
 
     public void applyLayer(GuiLayer layer) {
@@ -74,51 +84,44 @@ public class Gui {
         }
     }
 
-    public void refresh(int slot) {
-        ItemStack item = this.getSlot(slot).buttonProvider().button().icon();
-        this.inventory.setItem(slot, item);
+    public void refresh(Slot slot) {
+        this.inventory.setItem(slot.rawSlot(), slot.icon());
     }
 
     public void refresh() {
-        for (int slot = 0; slot < this.slots.length; slot++) {
+        for (Slot slot : this.slots) {
             refresh(slot);
         }
     }
 
-    public void open() {
+    protected void open(JavaPlugin plugin) {
         refresh();
 
         if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(LushLib.getInstance().getPlugin(), () -> this.player.openInventory(this.inventory));
+            Bukkit.getScheduler().runTask(plugin, () -> this.player.openInventory(this.inventory));
         } else {
-            player.openInventory(inventory);
+            this.player.openInventory(this.inventory);
         }
-
-        LushLib.getInstance().getPlugin().getManager(GuiManager.class).ifPresent(guiManager -> guiManager.addGui(player.getUniqueId(), this));
     }
 
     public void onClick(InventoryClickEvent event) {
-        this.onClick(event, false);
-    }
-
-    public void onClick(InventoryClickEvent event, boolean cancelAll) {
         Inventory clickedInventory = event.getClickedInventory();
         if (clickedInventory == null) {
             return;
         }
 
-        int slot = event.getRawSlot();
-
-        Button button = buttons.get(slot);
-        if (button != null) {
+        int rawSlot = event.getRawSlot();
+        Slot slot = this.getSlot(rawSlot);
+        if (slot != null) {
             try {
-                button.onClick(event);
+                slot.click(new GuiActor(this.player), this);
+                slot.click(event);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
 
-        if (cancelAll) {
+        if (this.locked) {
             event.setCancelled(true);
             return;
         }
@@ -126,89 +129,104 @@ public class Gui {
         switch (event.getAction()) {
             case COLLECT_TO_CURSOR -> event.setCancelled(true);
             case DROP_ALL_SLOT, DROP_ONE_SLOT, PLACE_ALL, PLACE_SOME, PLACE_ONE, PICKUP_ALL, PICKUP_HALF, PICKUP_SOME, PICKUP_ONE, SWAP_WITH_CURSOR, CLONE_STACK, HOTBAR_SWAP, HOTBAR_MOVE_AND_READD  -> {
-                if (clickedInventory.equals(inventory) && this.slots[slot].locked()) {
+                if (clickedInventory.equals(this.inventory) && this.slots[rawSlot].locked()) {
                     event.setCancelled(true);
                 }
             }
             case MOVE_TO_OTHER_INVENTORY -> {
                 event.setCancelled(true);
-                if (!clickedInventory.equals(inventory)) {
-                    List<Integer> unlockedSlots = slotLockMap.entrySet()
-                        .stream()
-                        .filter(entry -> !entry.getValue())
-                        .map(Map.Entry::getKey)
-                        .sorted()
-                        .toList();
 
-                    ItemStack clickedItem = event.getCurrentItem();
-                    if (clickedItem != null) {
-                        int remainingToDistribute = clickedItem.getAmount();
-                        int backupDestinationSlot = -1;
-                        boolean complete = false;
-                        for (int unlockedSlot : unlockedSlots) {
-                            if (complete) {
-                                break;
-                            }
+                if (clickedInventory.equals(this.inventory)) {
+                    break;
+                }
 
-                            ItemStack slotItem = inventory.getItem(unlockedSlot);
-                            if ((slotItem == null || slotItem.getType() == Material.AIR) && backupDestinationSlot == -1) {
-                                backupDestinationSlot = unlockedSlot;
-                                continue;
-                            }
+                ItemStack clickedItem = event.getCurrentItem();
+                if (clickedItem == null) {
+                    return;
+                }
 
-                            if (slotItem != null && slotItem.isSimilar(clickedItem)) {
-                                int spaceInStack = slotItem.getMaxStackSize() - slotItem.getAmount();
+                List<Integer> unlockedSlots = Arrays.stream(this.slots)
+                    .filter(aSlot -> !aSlot.locked())
+                    .map(Slot::rawSlot)
+                    .sorted()
+                    .toList();
 
-                                if (spaceInStack <= remainingToDistribute) {
-                                    slotItem.setAmount(slotItem.getAmount() + remainingToDistribute);
-                                    clickedItem.setType(Material.AIR);
-                                    complete = true;
-                                } else if (spaceInStack > 0) {
-                                    remainingToDistribute -= spaceInStack;
-                                    slotItem.setAmount(slotItem.getMaxStackSize());
-                                    clickedItem.setAmount(clickedItem.getAmount() - spaceInStack);
-                                }
-                            }
-                        }
+                int remainingToDistribute = clickedItem.getAmount();
+                int backupDestinationSlot = -1;
+                boolean complete = false;
+                for (int unlockedSlot : unlockedSlots) {
+                    if (complete) {
+                        break;
+                    }
 
-                        if (!complete && backupDestinationSlot != -1) {
-                            inventory.setItem(backupDestinationSlot, clickedItem);
-                            event.getInventory().setItem(event.getSlot(), null);
+                    ItemStack slotItem = this.inventory.getItem(unlockedSlot);
+                    if (backupDestinationSlot == -1 && (slotItem == null || slotItem.getType() == Material.AIR)) {
+                        backupDestinationSlot = unlockedSlot;
+                        continue;
+                    }
+
+                    if (slotItem != null && slotItem.isSimilar(clickedItem)) {
+                        int spaceInStack = slotItem.getMaxStackSize() - slotItem.getAmount();
+
+                        if (spaceInStack <= remainingToDistribute) {
+                            slotItem.setAmount(slotItem.getAmount() + remainingToDistribute);
+                            event.setCurrentItem(null);
+                            complete = true;
+                        } else if (spaceInStack > 0) {
+                            remainingToDistribute -= spaceInStack;
+                            slotItem.setAmount(slotItem.getMaxStackSize());
+                            clickedItem.setAmount(clickedItem.getAmount() - spaceInStack);
                         }
                     }
+                }
+
+                if (!complete && backupDestinationSlot != -1) {
+                    this.inventory.setItem(backupDestinationSlot, clickedItem);
+                    event.getInventory().setItem(event.getSlot(), null);
                 }
             }
         }
     }
 
     public void onDrag(InventoryDragEvent event) {
-        for (int slot : event.getRawSlots()) {
-            if (slot <= 53 && this.getSlot(slot).locked()) {
+        for (int rawSlot : event.getRawSlots()) {
+            if (rawSlot <= 53 && this.getSlot(rawSlot).locked()) {
                 event.setCancelled(true);
                 return;
             }
         }
     }
 
-    public void onClose(Gui gui, InventoryCloseEvent event, GuiHandler instance) {
-
-        LushLib.getInstance().getPlugin().getManager(GuiManager.class).ifPresent(guiManager -> guiManager.removeGui(player.getUniqueId()));
-    }
-
     public void close() {
-        player.closeInventory();
+        this.player.closeInventory();
     }
 
-    public static class Builder {
-        private final InventoryType inventoryType;
-        private final int size;
+    public void onClose(InventoryCloseEvent event) {}
 
-        private Builder(InventoryType inventoryType) {
+    public static Builder builder(JavaPlugin plugin, InventoryType inventoryType) {
+        return new Builder(plugin, inventoryType);
+    }
+
+    public static Builder builder(JavaPlugin plugin, int size) {
+        return new Builder(plugin, size);
+    }
+
+    // TODO: Add ability to apply a layer and define slots to builder
+    public static class Builder {
+        private final JavaPlugin plugin;
+        private final InventoryType inventoryType;
+        private int size;
+        private Component title = Component.empty();
+        private boolean locked = false;
+
+        private Builder(JavaPlugin plugin, InventoryType inventoryType) {
+            this.plugin = plugin;
             this.inventoryType = inventoryType;
             this.size = inventoryType.getDefaultSize();
         }
 
-        private Builder(int size) {
+        private Builder(JavaPlugin plugin, int size) {
+            this.plugin = plugin;
             this.inventoryType = InventoryType.CHEST;
             this.size = size;
         }
@@ -218,8 +236,26 @@ public class Gui {
             return this;
         }
 
-        public Gui open(Player player) {
+        public Builder title(Component title) {
+            this.title = title;
+            return this;
+        }
 
+        public Builder title(String title) {
+            return this.title(ModernChatColorHandler.translate(title));
+        }
+
+        public Builder locked(boolean locked) {
+            this.locked = locked;
+            return this;
+        }
+
+        public Gui open(Player player) {
+            if (this.inventoryType == InventoryType.CHEST) {
+                return new Gui(this.plugin, this.size, this.title, player, this.locked);
+            } else {
+                return new Gui(this.plugin, this.inventoryType, this.title, player, this.locked);
+            }
         }
     }
 }
