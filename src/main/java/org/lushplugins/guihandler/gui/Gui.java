@@ -66,6 +66,10 @@ public class Gui {
         }
     }
 
+    public void setProviderFor(char label, LabelledSlotProvider provider) {
+        this.labelProviders.put(label, provider);
+    }
+
     public void applyLayer(GuiLayer layer) {
         TreeMultimap<Character, Integer> slotMap = layer.getSlotMap();
         for (char label : slotMap.keySet()) {
