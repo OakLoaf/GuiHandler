@@ -99,7 +99,7 @@ public class Gui {
         refresh();
     }
 
-    public void prevPage() {
+    public void previousPage() {
         this.page--;
         refresh();
     }
