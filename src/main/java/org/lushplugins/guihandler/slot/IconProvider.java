@@ -6,5 +6,5 @@ import org.lushplugins.guihandler.gui.Gui;
 
 @FunctionalInterface
 public interface IconProvider {
-    @Nullable ItemStack icon(Gui gui);
+    @Nullable ItemStack icon(Gui gui, Slot slot);
 }

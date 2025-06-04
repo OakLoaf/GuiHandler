@@ -87,7 +87,7 @@ public final class GuiHandler {
         }
 
         public Builder registerButtonType(String id, Button button) {
-            return registerButtonType(id, (gui) -> button);
+            return registerButtonType(id, (gui, slot) -> button);
         }
 
         public Builder registerLabelProvider(char label, SlotProvider provider) {

@@ -52,7 +52,7 @@ public class Slot {
     }
 
     public @Nullable ItemStack icon(Gui gui) {
-        return this.iconProvider.icon(gui);
+        return this.iconProvider.icon(gui, this);
     }
 
     public void iconProvider(IconProvider iconProvider) {
@@ -60,11 +60,11 @@ public class Slot {
     }
 
     public void icon(ItemStack icon) {
-        this.iconProvider((gui) -> icon);
+        this.iconProvider((gui, slot) -> icon);
     }
 
     public @Nullable Button button(Gui gui) {
-        return this.buttonProvider.button(gui);
+        return this.buttonProvider.button(gui, this);
     }
 
     public void click(InventoryClickEvent event, Gui gui) {

@@ -5,5 +5,5 @@ import org.lushplugins.guihandler.gui.Gui;
 
 @FunctionalInterface
 public interface ButtonProvider {
-    @Nullable Button button(Gui gui);
+    @Nullable Button button(Gui gui, Slot slot);
 }

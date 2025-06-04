@@ -10,30 +10,30 @@ public interface SlotProvider extends IconProvider, ButtonProvider {
         return new SlotProvider() {
 
             @Override
-            public ItemStack icon(Gui gui) {
-                return iconProvider.icon(gui);
+            public ItemStack icon(Gui gui, Slot slot) {
+                return iconProvider.icon(gui, slot);
             }
 
             @Override
-            public Button button(Gui gui) {
-                return buttonProvider.button(gui);
+            public Button button(Gui gui, Slot slot) {
+                return buttonProvider.button(gui, slot);
             }
         };
     }
 
     static SlotProvider create(IconProvider iconProvider) {
-        return create(iconProvider, (gui) -> null);
+        return create(iconProvider, (gui, slot) -> null);
     }
 
     static SlotProvider create(ItemStack item) {
-        return create((IconProvider) (gui) -> item);
+        return create((IconProvider) (gui, slot) -> item);
     }
 
     static SlotProvider create(ButtonProvider buttonProvider) {
-        return create((gui) -> null, buttonProvider);
+        return create((gui, slot) -> null, buttonProvider);
     }
 
     static SlotProvider create(Button button) {
-        return create((ButtonProvider) (gui) -> button);
+        return create((ButtonProvider) (gui, slot) -> button);
     }
 }
