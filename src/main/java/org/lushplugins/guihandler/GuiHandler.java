@@ -4,6 +4,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lushplugins.guihandler.gui.GuiLayer;
 import org.lushplugins.guihandler.slot.*;
 import org.lushplugins.guihandler.gui.Gui;
 import org.lushplugins.guihandler.listener.InventoryListener;
@@ -35,6 +36,10 @@ public final class GuiHandler {
 
     public Gui.Builder guiBuilder(int size) {
         return Gui.builder(this, size);
+    }
+
+    public Gui.Builder guiBuilder(GuiLayer layer) {
+        return Gui.builder(this, layer);
     }
 
     public Gui getOpenGui(UUID uuid) {

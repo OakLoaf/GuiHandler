@@ -218,6 +218,12 @@ public class Gui {
         return new Builder(instance, size);
     }
 
+    public static Builder builder(GuiHandler instance, GuiLayer layer) {
+        Builder builder = new Builder(instance, layer.getSize());
+        builder.applyLayer(layer);
+        return builder;
+    }
+
     public static class Builder {
         private final GuiHandler instance;
         private final InventoryType inventoryType;
