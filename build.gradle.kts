@@ -19,14 +19,8 @@ dependencies {
     // Dependencies
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
 
-    // Soft Dependencies
-
     // Libraries
     implementation("org.lushplugins:ChatColorHandler:5.1.3")
-    implementation("org.lushplugins.lushlib:skullcreator:0.10.74")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.19.0") // Jackson
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.19.0") // Jackson
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.0") // Jackson
 }
 
 java {
