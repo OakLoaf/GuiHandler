@@ -26,7 +26,7 @@ public class InventoryListener implements Listener {
         }
 
         Inventory clickedInventory = event.getClickedInventory();
-        if (clickedInventory == null || !player.getOpenInventory().getTopInventory().equals(gui.getInventory())) {
+        if (clickedInventory == null || !player.getOpenInventory().getTopInventory().equals(gui.inventory())) {
             return;
         }
 
@@ -37,7 +37,7 @@ public class InventoryListener implements Listener {
     public void onInventoryDrag(InventoryDragEvent event) {
         Player player = (Player) event.getWhoClicked();
         Gui gui = this.guiHandler.getOpenGui(player.getUniqueId());
-        if (gui == null || !event.getInventory().equals(gui.getInventory())) {
+        if (gui == null || !event.getInventory().equals(gui.inventory())) {
             return;
         }
 
@@ -48,7 +48,7 @@ public class InventoryListener implements Listener {
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
         Gui gui = this.guiHandler.getOpenGui(player.getUniqueId());
-        if (gui == null || !event.getInventory().equals(gui.getInventory())) {
+        if (gui == null || !event.getInventory().equals(gui.inventory())) {
             return;
         }
 

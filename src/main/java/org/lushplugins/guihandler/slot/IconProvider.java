@@ -1,8 +1,9 @@
 package org.lushplugins.guihandler.slot;
 
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 @FunctionalInterface
 public interface IconProvider {
-    ItemStack icon();
+    @Nullable ItemStack icon();
 }

@@ -4,12 +4,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.lushplugins.guihandler.gui.Gui;
-import org.lushplugins.guihandler.gui.GuiActor;
 
 public class Slot {
     private final int rawSlot;
-    private final char label;
-    private final Integer labelIndex;
+    private char label;
+    private Integer labelIndex;
     private boolean locked = true;
     private IconProvider iconProvider;
     private ButtonProvider buttonProvider;
@@ -32,8 +31,16 @@ public class Slot {
         return this.label;
     }
 
+    public void label(char label) {
+        this.label = label;
+    }
+
     public @Nullable Integer labelIndex() {
         return this.labelIndex;
+    }
+
+    public void labelIndex(@Nullable Integer labelIndex) {
+        this.labelIndex = labelIndex;
     }
 
     public boolean locked() {
@@ -44,7 +51,7 @@ public class Slot {
         this.locked = lock;
     }
 
-    public ItemStack icon() {
+    public @Nullable ItemStack icon() {
         return this.iconProvider.icon();
     }
 
@@ -56,19 +63,35 @@ public class Slot {
         this.iconProvider(() -> icon);
     }
 
-    public Button button() {
+    public @Nullable Button button() {
         return this.buttonProvider.button();
     }
 
-    public void click(GuiActor actor, Gui gui) {
-        this.button().click(actor, gui, this);
+    public void click(Gui gui) {
+        Button button = this.button();
+        if (button != null) {
+            button.click(gui, this);
+        }
     }
 
     public void click(InventoryClickEvent event) {
-        this.button().click(event);
+        Button button = this.button();
+        if (button != null) {
+            button.click(event);
+        }
+    }
+
+    public void click(InventoryClickEvent event, Gui gui) {
+        this.click(gui);
+        this.click(event);
     }
 
     public void buttonProvider(ButtonProvider buttonProvider) {
         this.buttonProvider = buttonProvider;
+    }
+
+    public void slotProvider(SlotProvider slotProvider) {
+        this.iconProvider(slotProvider);
+        this.buttonProvider(slotProvider);
     }
 }

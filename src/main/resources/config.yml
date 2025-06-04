@@ -1,0 +1,29 @@
+gui:
+  title: "Gui Title"
+  buttons:
+    "#":
+      material: glass_pane
+    "1":
+      material: yellow_dye
+      display-name: "%player%'s example button"
+      action:
+        type: message
+        message: "example button action 1"
+    "2":
+      material: orange_dye
+      display-name: "%player%'s example button"
+      action:
+        type: message
+        message: "example button action 2"
+    "3":
+      material: red_dye
+      display-name: "%player%'s example button"
+      action:
+        type: message
+        message: "example button action 3"
+  format:
+    - "#########"
+    - "#       #"
+    - "# 1 2 3 #"
+    - "#       #"
+    - "#########"

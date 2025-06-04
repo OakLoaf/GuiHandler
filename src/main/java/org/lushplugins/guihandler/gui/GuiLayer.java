@@ -1,13 +1,13 @@
 package org.lushplugins.guihandler.gui;
 
 import com.google.common.collect.TreeMultimap;
-import org.lushplugins.guihandler.slot.ButtonProvider;
+import org.lushplugins.guihandler.slot.SlotProvider;
 
 import java.util.*;
 
 public class GuiLayer {
     private final List<String> rows;
-    private final Map<Character, ButtonProvider> buttons = new HashMap<>();
+    private final Map<Character, SlotProvider> providers = new HashMap<>();
 
     public GuiLayer(List<String> rows) {
         if (rows.stream().anyMatch(row -> row.length() != 9)) {
@@ -34,7 +34,7 @@ public class GuiLayer {
             throw new IllegalArgumentException("Rows should be 9 characters long.");
         }
 
-        rows.set(index, format);
+        this.rows.set(index, format);
     }
 
     public void addRow(String format) {
@@ -42,7 +42,7 @@ public class GuiLayer {
             throw new IllegalArgumentException("All rows should be 9 characters long.");
         }
 
-        rows.add(format);
+        this.rows.add(format);
     }
 
     public int getRowCount() {
@@ -53,16 +53,16 @@ public class GuiLayer {
         return rows.size() * 9;
     }
 
-    public Map<Character, ButtonProvider> getButtonProviders() {
-        return buttons;
+    public Map<Character, SlotProvider> getSlotProviders() {
+        return providers;
     }
 
-    public ButtonProvider getButtonProvider(char character) {
-        return buttons.get(character);
+    public SlotProvider getSlotProvider(char character) {
+        return this.providers.get(character);
     }
 
-    public void setButtonProvider(char character, ButtonProvider button) {
-        buttons.put(character, button);
+    public void setSlotProvider(char character, SlotProvider provider) {
+        this.providers.put(character, provider);
     }
 
     public TreeMultimap<Character, Integer> getSlotMap() {
@@ -79,13 +79,13 @@ public class GuiLayer {
         int currRow = (int) Math.ceil((slot + 1) / 9F) - 1;
         int slotInRow = slot % 9;
 
-        return rows.get(currRow).charAt(slotInRow);
+        return this.rows.get(currRow).charAt(slotInRow);
     }
 
     public int getCharCount(char character) {
         int count = 0;
 
-        for (String row : rows) {
+        for (String row : this.rows) {
             for (int i = 0; i < row.length(); i++) {
                 if (row.charAt(i) == character) {
                     count++;

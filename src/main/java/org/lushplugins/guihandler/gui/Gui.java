@@ -1,86 +1,95 @@
 package org.lushplugins.guihandler.gui;
 
 import com.google.common.collect.TreeMultimap;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.lushplugins.chatcolorhandler.ModernChatColorHandler;
-import org.lushplugins.guihandler.slot.ButtonProvider;
+import org.lushplugins.guihandler.GuiHandler;
+import org.lushplugins.guihandler.slot.LabelledSlotProvider;
 import org.lushplugins.guihandler.slot.Slot;
+import org.lushplugins.guihandler.slot.SlotProvider;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Gui {
+    private final GuiHandler instance;
     private final Inventory inventory;
     private final Slot[] slots;
-    private final Player player;
+    private final GuiActor actor;
     private final boolean locked;
+    private final Map<Character, LabelledSlotProvider> labelProviders;
 
-    private Gui(JavaPlugin plugin, Inventory inventory, Slot[] slots, Player player, boolean locked) {
+    private Gui(GuiHandler instance, Inventory inventory, Slot[] slots, GuiActor actor, boolean locked, Map<Character, LabelledSlotProvider> labelProviders) {
+        this.instance = instance;
         this.inventory = inventory;
         this.slots = slots;
-        this.player = player;
+        this.actor = actor;
         this.locked = locked;
+        this.labelProviders = labelProviders;
 
-        open(plugin);
+        refreshLabelIndexes();
+        open();
     }
 
-    public Gui(JavaPlugin plugin, int size, Component component, Player player, boolean locked) {
-        this(
-            plugin,
-            Bukkit.getServer().createInventory(null, size, component),
-            new Slot[size],
-            player,
-            locked
-        );
-    }
-
-    public Gui(JavaPlugin plugin, InventoryType inventoryType, Component component, Player player, boolean locked) {
-        this(
-            plugin,
-            Bukkit.getServer().createInventory(null, inventoryType, component),
-            new Slot[inventoryType.getDefaultSize()],
-            player,
-            locked
-        );
-    }
-
-    public Gui(JavaPlugin plugin, GuiLayer layer, Component title, Player player, boolean locked) {
-        this(plugin, layer.getSize(), title, player, locked);
-        applyLayer(layer);
-    }
-
-    public Inventory getInventory() {
+    public Inventory inventory() {
         return inventory;
     }
 
-    public Player getPlayer() {
-        return player;
+    public GuiActor actor() {
+        return actor;
     }
 
-    public Slot[] getSlots() {
-        return slots;
+    public Slot[] slots() {
+        return Arrays.copyOf(this.slots, this.slots.length);
     }
 
-    public Slot getSlot(int slot) {
-        return this.slots[slot] != null ? this.slots[slot] : new Slot(slot, ' ');
+    // TODO: Ensure it's not possible for the slot array to contain `null`
+    public Slot slot(int slot) {
+        return this.slots[slot];
+    }
+
+    private void refreshLabelIndexes() {
+        Map<Character, AtomicInteger> indexes = new HashMap<>();
+
+        for (Slot slot : this.slots) {
+            char label = slot.label();
+            int index = indexes.computeIfAbsent(label, ignored -> new AtomicInteger()).getAndIncrement();
+            slot.labelIndex(index);
+        }
     }
 
     public void applyLayer(GuiLayer layer) {
         TreeMultimap<Character, Integer> slotMap = layer.getSlotMap();
-        for (char character : slotMap.keySet()) {
-            ButtonProvider provider = layer.getButtonProvider(character);
+        for (char label : slotMap.keySet()) {
+            SlotProvider provider = Optional.ofNullable(layer.getSlotProvider(label))
+                .orElseGet(() -> this.instance.getDefaultProvider(label));
             if (provider == null) {
                 continue;
             }
 
-            slotMap.get(character).forEach(slot -> this.getSlot(slot).buttonProvider(provider));
+            for (int rawSlot : slotMap.get(label)) {
+                Slot slot = this.slot(rawSlot);
+                slot.label(label);
+                slot.slotProvider(provider);
+            }
+        }
+
+        refreshLabelIndexes();
+    }
+
+    protected void open() {
+        refresh();
+
+        if (!Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTask(this.instance.getPlugin(), () -> this.actor.player().openInventory(this.inventory));
+        } else {
+            this.actor.player().openInventory(this.inventory);
         }
     }
 
@@ -89,18 +98,17 @@ public class Gui {
     }
 
     public void refresh() {
+        Arrays.stream(this.slots)
+            .collect(Collectors.groupingBy(Slot::label))
+            .forEach((label, slots) -> {
+                LabelledSlotProvider provider = this.labelProviders.get(label);
+                if (provider != null) {
+                    provider.apply(this, label, slots);
+                }
+            });
+
         for (Slot slot : this.slots) {
             refresh(slot);
-        }
-    }
-
-    protected void open(JavaPlugin plugin) {
-        refresh();
-
-        if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(plugin, () -> this.player.openInventory(this.inventory));
-        } else {
-            this.player.openInventory(this.inventory);
         }
     }
 
@@ -111,11 +119,10 @@ public class Gui {
         }
 
         int rawSlot = event.getRawSlot();
-        Slot slot = this.getSlot(rawSlot);
+        Slot slot = this.slot(rawSlot);
         if (slot != null) {
             try {
-                slot.click(new GuiActor(this.player), this);
-                slot.click(event);
+                slot.click(event, this);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -190,7 +197,7 @@ public class Gui {
 
     public void onDrag(InventoryDragEvent event) {
         for (int rawSlot : event.getRawSlots()) {
-            if (rawSlot <= 53 && this.getSlot(rawSlot).locked()) {
+            if (rawSlot <= 53 && this.slot(rawSlot).locked()) {
                 event.setCancelled(true);
                 return;
             }
@@ -198,35 +205,37 @@ public class Gui {
     }
 
     public void close() {
-        this.player.closeInventory();
+        this.actor.player().closeInventory();
     }
 
     public void onClose(InventoryCloseEvent event) {}
 
-    public static Builder builder(JavaPlugin plugin, InventoryType inventoryType) {
-        return new Builder(plugin, inventoryType);
+    public static Builder builder(GuiHandler instance, InventoryType inventoryType) {
+        return new Builder(instance, inventoryType);
     }
 
-    public static Builder builder(JavaPlugin plugin, int size) {
-        return new Builder(plugin, size);
+    public static Builder builder(GuiHandler instance, int size) {
+        return new Builder(instance, size);
     }
 
-    // TODO: Add ability to apply a layer and define slots to builder
     public static class Builder {
-        private final JavaPlugin plugin;
+        private final GuiHandler instance;
         private final InventoryType inventoryType;
         private int size;
-        private Component title = Component.empty();
+        private String title;
         private boolean locked = false;
+        private final List<Character> slots = new ArrayList<>();
+        private final Map<Character, SlotProvider> providers = new HashMap<>();
+        private final Map<Character, LabelledSlotProvider> labelProviders = new HashMap<>();
 
-        private Builder(JavaPlugin plugin, InventoryType inventoryType) {
-            this.plugin = plugin;
+        private Builder(GuiHandler instance, InventoryType inventoryType) {
+            this.instance = instance;
             this.inventoryType = inventoryType;
             this.size = inventoryType.getDefaultSize();
         }
 
-        private Builder(JavaPlugin plugin, int size) {
-            this.plugin = plugin;
+        private Builder(GuiHandler instance, int size) {
+            this.instance = instance;
             this.inventoryType = InventoryType.CHEST;
             this.size = size;
         }
@@ -236,13 +245,9 @@ public class Gui {
             return this;
         }
 
-        public Builder title(Component title) {
+        public Builder title(String title) {
             this.title = title;
             return this;
-        }
-
-        public Builder title(String title) {
-            return this.title(ModernChatColorHandler.translate(title));
         }
 
         public Builder locked(boolean locked) {
@@ -250,12 +255,59 @@ public class Gui {
             return this;
         }
 
-        public Gui open(Player player) {
-            if (this.inventoryType == InventoryType.CHEST) {
-                return new Gui(this.plugin, this.size, this.title, player, this.locked);
-            } else {
-                return new Gui(this.plugin, this.inventoryType, this.title, player, this.locked);
+        public Builder slot(int slot, char label) {
+            // Expands list of slots
+            while (this.slots.size() <= slot) {
+                this.slots.add(null);
             }
+
+            this.slots.set(slot, label);
+            return this;
+        }
+
+        public Builder applyLayer(GuiLayer layer) {
+            layer.getSlotMap().forEach((label, slot) -> this.slot(slot, label));
+            layer.getSlotProviders().forEach(this::setProviderFor);
+            return this;
+        }
+
+        public Builder setProviderFor(char label, SlotProvider provider) {
+            this.providers.put(label, provider);
+            return this;
+        }
+
+        public Builder setProviderFor(char label, LabelledSlotProvider provider) {
+            this.labelProviders.put(label, provider);
+            return this;
+        }
+
+        public Gui open(Player player) {
+            Inventory inventory;
+            Slot[] slots;
+            if (this.inventoryType == InventoryType.CHEST) {
+                inventory = Bukkit.getServer().createInventory(null, this.size, ModernChatColorHandler.translate(this.title, player));
+                slots = new Slot[this.size];
+            } else {
+                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, ModernChatColorHandler.translate(this.title, player));
+                slots = new Slot[this.inventoryType.getDefaultSize()];
+            }
+
+            Map<Character, AtomicInteger> indexes = new HashMap<>();
+            for (int rawSlot = 0; rawSlot < slots.length; rawSlot++) {
+                Character label = Optional.ofNullable(this.slots.get(rawSlot)).orElse(' ');
+                int labelIndex = indexes.computeIfAbsent(label, ignored -> new AtomicInteger()).getAndIncrement();
+                Slot slot = new Slot(rawSlot, label, labelIndex);
+
+                SlotProvider provider = Optional.ofNullable(this.providers.get(label))
+                    .orElseGet(() -> this.instance.getDefaultProvider(label));
+                if (provider != null) {
+                    slot.slotProvider(provider);
+                }
+
+                slots[rawSlot] = slot;
+            }
+
+            return new Gui(this.instance, inventory, slots, new GuiActor(player), this.locked, this.labelProviders);
         }
     }
 }

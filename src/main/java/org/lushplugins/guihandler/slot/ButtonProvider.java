@@ -1,6 +1,8 @@
 package org.lushplugins.guihandler.slot;
 
+import org.jetbrains.annotations.Nullable;
+
 @FunctionalInterface
 public interface ButtonProvider {
-    Button button();
+    @Nullable Button button();
 }
