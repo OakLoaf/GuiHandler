@@ -94,7 +94,7 @@ public class Gui {
     }
 
     public void refresh(Slot slot) {
-        this.inventory.setItem(slot.rawSlot(), slot.icon());
+        this.inventory.setItem(slot.rawSlot(), slot.icon(this));
     }
 
     public void refresh() {

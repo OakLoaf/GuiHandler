@@ -51,8 +51,8 @@ public class Slot {
         this.locked = lock;
     }
 
-    public @Nullable ItemStack icon() {
-        return this.iconProvider.icon();
+    public @Nullable ItemStack icon(Gui gui) {
+        return this.iconProvider.icon(gui);
     }
 
     public void iconProvider(IconProvider iconProvider) {
@@ -60,30 +60,19 @@ public class Slot {
     }
 
     public void icon(ItemStack icon) {
-        this.iconProvider(() -> icon);
+        this.iconProvider((gui) -> icon);
     }
 
-    public @Nullable Button button() {
-        return this.buttonProvider.button();
-    }
-
-    public void click(Gui gui) {
-        Button button = this.button();
-        if (button != null) {
-            button.click(gui, this);
-        }
-    }
-
-    public void click(InventoryClickEvent event) {
-        Button button = this.button();
-        if (button != null) {
-            button.click(event);
-        }
+    public @Nullable Button button(Gui gui) {
+        return this.buttonProvider.button(gui);
     }
 
     public void click(InventoryClickEvent event, Gui gui) {
-        this.click(gui);
-        this.click(event);
+        Button button = this.button(gui);
+        if (null != button) {
+            button.click(gui, this);
+            button.click(event);
+        }
     }
 
     public void buttonProvider(ButtonProvider buttonProvider) {

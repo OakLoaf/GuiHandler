@@ -2,6 +2,7 @@ package org.lushplugins.guihandler.slot;
 
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.lushplugins.guihandler.gui.Gui;
 
 public interface SlotProvider extends IconProvider, ButtonProvider {
 
@@ -9,30 +10,30 @@ public interface SlotProvider extends IconProvider, ButtonProvider {
         return new SlotProvider() {
 
             @Override
-            public ItemStack icon() {
-                return iconProvider.icon();
+            public ItemStack icon(Gui gui) {
+                return iconProvider.icon(gui);
             }
 
             @Override
-            public Button button() {
-                return buttonProvider.button();
+            public Button button(Gui gui) {
+                return buttonProvider.button(gui);
             }
         };
     }
 
     static SlotProvider create(IconProvider iconProvider) {
-        return create(iconProvider, () -> null);
+        return create(iconProvider, (gui) -> null);
     }
 
     static SlotProvider create(ItemStack item) {
-        return create(() -> item);
+        return create((IconProvider) (gui) -> item);
     }
 
     static SlotProvider create(ButtonProvider buttonProvider) {
-        return create(() -> null, buttonProvider);
+        return create((gui) -> null, buttonProvider);
     }
 
     static SlotProvider create(Button button) {
-        return create(() -> button);
+        return create((ButtonProvider) (gui) -> button);
     }
 }
