@@ -20,7 +20,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
 
     // Libraries
-    implementation("org.lushplugins:ChatColorHandler:5.1.3")
+    implementation("org.lushplugins:ChatColorHandler:5.1.5")
 }
 
 java {
