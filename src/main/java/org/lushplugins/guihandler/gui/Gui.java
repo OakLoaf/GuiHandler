@@ -111,11 +111,14 @@ public class Gui {
     protected void open() {
         refresh();
 
+        Player player = this.actor.player();
         if (!Bukkit.isPrimaryThread()) {
-            Bukkit.getScheduler().runTask(this.instance.getPlugin(), () -> this.actor.player().openInventory(this.inventory));
+            Bukkit.getScheduler().runTask(this.instance.getPlugin(), () -> player.openInventory(this.inventory));
         } else {
-            this.actor.player().openInventory(this.inventory);
+            player.openInventory(this.inventory);
         }
+
+        this.instance.setOpenGui(player.getUniqueId(), this);
     }
 
     public void refresh(Slot slot) {

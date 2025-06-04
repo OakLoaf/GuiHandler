@@ -46,6 +46,10 @@ public final class GuiHandler {
         return this.openGuis.get(uuid);
     }
 
+    public void setOpenGui(UUID uuid, Gui gui) {
+        this.openGuis.put(uuid, gui);
+    }
+
     public void removeOpenGui(UUID uuid) {
         this.openGuis.remove(uuid);
     }
