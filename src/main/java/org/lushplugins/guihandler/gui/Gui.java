@@ -24,6 +24,8 @@ public class Gui {
     private final GuiActor actor;
     private final boolean locked;
     private final Map<Character, LabelledSlotProvider> labelProviders;
+    // Consider replacing with a GuiData class to allow users to add custom data fields
+    private int page = 1;
 
     private Gui(GuiHandler instance, Inventory inventory, Slot[] slots, GuiActor actor, boolean locked, Map<Character, LabelledSlotProvider> labelProviders) {
         this.instance = instance;
@@ -81,6 +83,25 @@ public class Gui {
         }
 
         refreshLabelIndexes();
+    }
+
+    public int page() {
+        return this.page;
+    }
+
+    public void page(int page) {
+        this.page = page;
+        refresh();
+    }
+
+    public void nextPage() {
+        this.page++;
+        refresh();
+    }
+
+    public void prevPage() {
+        this.page--;
+        refresh();
     }
 
     protected void open() {
