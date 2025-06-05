@@ -11,5 +11,5 @@ public @interface IconProvider {
     /**
      * @return label
      */
-    char value();
+    char[] value();
 }

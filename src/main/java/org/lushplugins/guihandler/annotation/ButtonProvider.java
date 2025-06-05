@@ -11,5 +11,5 @@ public @interface ButtonProvider {
     /**
      * @return label
      */
-    char value();
+    char[] value();
 }

@@ -26,13 +26,21 @@ public class ParameterProviders {
     }
 
     public static ParameterProvider<?> createSlotsProvider(Slots annotation) {
-        char label = annotation.value();
+        char[] labels = annotation.value();
 
-        if (label == Slots.DEFAULT_LABEL) {
+        if (labels.length == 1 && labels[0] == Slots.DEFAULT_LABEL) {
             return (type, context) -> context.gui().slots();
         } else {
             return (type, context) -> Arrays.stream(context.gui().slots())
-                .filter(slot -> slot.label() == label)
+                .filter(slot -> {
+                    for (char label : labels) {
+                        if (label == slot.label()) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                })
                 .toList();
         }
     }
