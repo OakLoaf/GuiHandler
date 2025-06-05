@@ -8,8 +8,8 @@ public class SlotProvider implements IconProvider, Button {
     private Button button;
 
     public SlotProvider() {
-        this.iconProvider = (ignored) -> null;
-        this.button = (ignored) -> {};
+        this.iconProvider = IconProvider.empty();
+        this.button = Button.empty();
     }
 
     public SlotProvider(IconProvider iconProvider, Button button) {
@@ -44,7 +44,7 @@ public class SlotProvider implements IconProvider, Button {
     }
 
     public static SlotProvider create(IconProvider iconProvider) {
-        return new SlotProvider(iconProvider, (context) -> {});
+        return new SlotProvider(iconProvider, Button.empty());
     }
 
     public static SlotProvider create(ItemStack item) {
@@ -52,6 +52,6 @@ public class SlotProvider implements IconProvider, Button {
     }
 
     public static SlotProvider create(Button button) {
-        return new SlotProvider((context) -> null, button);
+        return new SlotProvider(IconProvider.empty(), button);
     }
 }

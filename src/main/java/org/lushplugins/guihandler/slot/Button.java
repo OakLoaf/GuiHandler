@@ -7,4 +7,8 @@ public interface Button {
     void click(SlotContext context);
 
     default void click(InventoryClickEvent event) {}
+
+    static Button empty() {
+        return (ignored) -> {};
+    }
 }

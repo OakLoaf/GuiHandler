@@ -322,6 +322,17 @@ public class Gui {
 
         public Builder applyLayer(GuiLayer layer) {
             layer.getSlotMap().forEach((label, slot) -> this.slot(slot, label));
+            layer.getSlotProviders().forEach((label, provider) -> {
+                IconProvider iconProvider = provider.getIconProvider();
+                if (iconProvider != IconProvider.empty()) {
+                    this.setIconProviderFor(label, iconProvider);
+                }
+
+                Button button = provider.getButton();
+                if (button != Button.empty()) {
+                    this.setButtonFor(label, button);
+                }
+            });
             layer.getSlotProviders().forEach(this::setSlotProviderFor);
             return this;
         }
