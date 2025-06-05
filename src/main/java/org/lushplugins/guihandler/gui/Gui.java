@@ -332,13 +332,17 @@ public class Gui {
         }
 
         public Gui open(Player player, Object... provided) {
+            return openWith(player, this.title, provided);
+        }
+
+        public Gui openWith(Player player, String title, Object... provided) {
             Inventory inventory;
             Slot[] slots;
             if (this.inventoryType == InventoryType.CHEST) {
-                inventory = Bukkit.getServer().createInventory(null, this.size, ModernChatColorHandler.translate(this.title, player));
+                inventory = Bukkit.getServer().createInventory(null, this.size, ModernChatColorHandler.translate(title, player));
                 slots = new Slot[this.size];
             } else {
-                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, ModernChatColorHandler.translate(this.title, player));
+                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, ModernChatColorHandler.translate(title, player));
                 slots = new Slot[this.inventoryType.getDefaultSize()];
             }
 
