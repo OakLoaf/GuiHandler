@@ -88,7 +88,7 @@ public class AnnotationHandler {
                 for (char label : methodAnnotation.value()) {
                     builder.setIconProviderFor(label , guiMethod::call);
                 }
-            } else if (annotations.contains(InventoryAction.class)) {
+            } else if (annotations.contains(GuiEvent.class)) {
                 // TODO: Implement
             }
         }
@@ -99,6 +99,6 @@ public class AnnotationHandler {
     private static boolean containsGuiAnnotation(AnnotationList annotations) {
         return annotations.contains(ButtonProvider.class)
             || annotations.contains(IconProvider.class)
-            || annotations.contains(InventoryAction.class);
+            || annotations.contains(GuiEvent.class);
     }
 }
