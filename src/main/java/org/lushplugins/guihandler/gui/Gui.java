@@ -333,7 +333,6 @@ public class Gui {
                     this.setButtonFor(label, button);
                 }
             });
-            layer.getSlotProviders().forEach(this::setSlotProviderFor);
             return this;
         }
 
