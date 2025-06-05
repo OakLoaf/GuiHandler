@@ -8,7 +8,5 @@ public interface Button {
 
     default void click(InventoryClickEvent event) {}
 
-    static Button empty() {
-        return (ignored) -> {};
-    }
+    Button EMPTY = (ignored) -> {};
 }

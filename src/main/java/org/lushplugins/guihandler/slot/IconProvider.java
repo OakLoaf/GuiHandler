@@ -7,7 +7,5 @@ import org.jetbrains.annotations.Nullable;
 public interface IconProvider {
     @Nullable ItemStack icon(SlotContext context);
 
-    static IconProvider empty() {
-        return (context) -> null;
-    }
+    IconProvider EMPTY = (context) -> null;
 }
