@@ -7,15 +7,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.lushplugins.chatcolorhandler.ModernChatColorHandler;
 import org.lushplugins.guihandler.GuiHandler;
-import org.lushplugins.guihandler.slot.LabelledSlotProvider;
-import org.lushplugins.guihandler.slot.Slot;
-import org.lushplugins.guihandler.slot.SlotProvider;
+import org.lushplugins.guihandler.slot.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Gui {
     private final GuiHandler instance;
@@ -24,16 +24,18 @@ public class Gui {
     private final GuiActor actor;
     private final boolean locked;
     private final Map<Character, LabelledSlotProvider> labelProviders;
+    private final Map<Class<?>, Object> provided;
     // Consider replacing with a GuiData class to allow users to add custom data fields
     private int page = 1;
 
-    private Gui(GuiHandler instance, Inventory inventory, Slot[] slots, GuiActor actor, boolean locked, Map<Character, LabelledSlotProvider> labelProviders) {
+    private Gui(GuiHandler instance, Inventory inventory, Slot[] slots, GuiActor actor, boolean locked, Map<Character, LabelledSlotProvider> labelProviders, Map<Class<?>, Object> provided) {
         this.instance = instance;
         this.inventory = inventory;
         this.slots = slots;
         this.actor = actor;
         this.locked = locked;
         this.labelProviders = labelProviders;
+        this.provided = provided;
 
         refreshLabelIndexes();
         open();
@@ -54,6 +56,12 @@ public class Gui {
     // TODO: Ensure it's not possible for the slot array to contain `null`
     public Slot slot(int slot) {
         return this.slots[slot];
+    }
+
+    public <T> @Nullable T provided(Class<T> typeClass) {
+        Object providedObject = this.provided.get(typeClass);
+        //noinspection unchecked
+        return providedObject != null ? (T) providedObject : null;
     }
 
     private void refreshLabelIndexes() {
@@ -94,18 +102,18 @@ public class Gui {
     }
 
     public void page(int page) {
-        this.page = page;
-        refresh();
+        if (this.page != page) {
+            this.page = page;
+            refresh();
+        }
     }
 
     public void nextPage() {
-        this.page++;
-        refresh();
+        this.page(this.page + 1);
     }
 
     public void previousPage() {
-        this.page--;
-        refresh();
+        this.page(this.page - 1);
     }
 
     protected void open() {
@@ -238,40 +246,28 @@ public class Gui {
 
     public void onClose(InventoryCloseEvent event) {}
 
-    public static Builder builder(GuiHandler instance, InventoryType inventoryType) {
-        return new Builder(instance, inventoryType);
-    }
-
-    public static Builder builder(GuiHandler instance, int size) {
-        return new Builder(instance, size);
-    }
-
-    public static Builder builder(GuiHandler instance, GuiLayer layer) {
-        Builder builder = new Builder(instance, layer.getSize());
-        builder.applyLayer(layer);
-        return builder;
+    public static Builder builder(GuiHandler instance) {
+        return new Builder(instance);
     }
 
     public static class Builder {
         private final GuiHandler instance;
-        private final InventoryType inventoryType;
-        private int size;
+        private InventoryType inventoryType = InventoryType.CHEST;
+        private int size = 27;
         private String title;
         private boolean locked = false;
         private final List<Character> slots = new ArrayList<>();
         private final Map<Character, SlotProvider> providers = new HashMap<>();
         private final Map<Character, LabelledSlotProvider> labelProviders = new HashMap<>();
 
-        private Builder(GuiHandler instance, InventoryType inventoryType) {
+        private Builder(GuiHandler instance) {
             this.instance = instance;
-            this.inventoryType = inventoryType;
-            this.size = inventoryType.getDefaultSize();
         }
 
-        private Builder(GuiHandler instance, int size) {
-            this.instance = instance;
-            this.inventoryType = InventoryType.CHEST;
-            this.size = size;
+        public Builder inventoryType(InventoryType inventoryType) {
+            this.inventoryType = inventoryType;
+            this.size = inventoryType.getDefaultSize();
+            return this;
         }
 
         public Builder size(int size) {
@@ -301,21 +297,41 @@ public class Gui {
 
         public Builder applyLayer(GuiLayer layer) {
             layer.getSlotMap().forEach((label, slot) -> this.slot(slot, label));
-            layer.getSlotProviders().forEach(this::setProviderFor);
+            layer.getSlotProviders().forEach(this::setSlotProviderFor);
             return this;
         }
 
-        public Builder setProviderFor(char label, SlotProvider provider) {
+        public Builder setSlotProviderFor(char label, SlotProvider provider) {
             this.providers.put(label, provider);
             return this;
         }
 
-        public Builder setProviderFor(char label, LabelledSlotProvider provider) {
+        public Builder setIconProviderFor(char label, IconProvider provider) {
+            if (this.providers.containsKey(label)) {
+                this.providers.get(label).setIconProvider(provider);
+            } else {
+                this.providers.put(label, SlotProvider.create(provider));
+            }
+
+            return this;
+        }
+
+        public Builder setButtonFor(char label, Button button) {
+            if (this.providers.containsKey(label)) {
+                this.providers.get(label).setButton(button);
+            } else {
+                this.providers.put(label, SlotProvider.create(button));
+            }
+
+            return this;
+        }
+
+        public Builder setSlotProviderFor(char label, LabelledSlotProvider provider) {
             this.labelProviders.put(label, provider);
             return this;
         }
 
-        public Gui open(Player player) {
+        public Gui open(Player player, Object... provided) {
             Inventory inventory;
             Slot[] slots;
             if (this.inventoryType == InventoryType.CHEST) {
@@ -341,7 +357,14 @@ public class Gui {
                 slots[rawSlot] = slot;
             }
 
-            return new Gui(this.instance, inventory, slots, new GuiActor(player), this.locked, this.labelProviders);
+            Map<Class<?>, Object> providedMap = Stream.of(provided)
+                .collect(Collectors.toMap(
+                    Object::getClass,
+                    obj -> obj,
+                    (existing, replacement) -> existing
+                ));
+
+            return new Gui(this.instance, inventory, slots, new GuiActor(player), this.locked, this.labelProviders, providedMap);
         }
     }
 }

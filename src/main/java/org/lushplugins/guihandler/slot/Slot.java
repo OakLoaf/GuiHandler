@@ -11,7 +11,7 @@ public class Slot {
     private Integer labelIndex;
     private boolean locked = true;
     private IconProvider iconProvider;
-    private ButtonProvider buttonProvider;
+    private Button button;
 
     public Slot(int rawSlot, char label, @Nullable Integer labelIndex) {
         this.rawSlot = rawSlot;
@@ -52,7 +52,7 @@ public class Slot {
     }
 
     public @Nullable ItemStack icon(Gui gui) {
-        return this.iconProvider.icon(gui, this);
+        return this.iconProvider.icon(new SlotContext(gui, this));
     }
 
     public void iconProvider(IconProvider iconProvider) {
@@ -60,27 +60,22 @@ public class Slot {
     }
 
     public void icon(ItemStack icon) {
-        this.iconProvider((gui, slot) -> icon);
-    }
-
-    public @Nullable Button button(Gui gui) {
-        return this.buttonProvider.button(gui, this);
+        this.iconProvider((context) -> icon);
     }
 
     public void click(InventoryClickEvent event, Gui gui) {
-        Button button = this.button(gui);
-        if (null != button) {
-            button.click(gui, this);
-            button.click(event);
+        if (this.button != null) {
+            this.button.click(new SlotContext(gui, this));
+            this.button.click(event);
         }
     }
 
-    public void buttonProvider(ButtonProvider buttonProvider) {
-        this.buttonProvider = buttonProvider;
+    public void button(Button button) {
+        this.button = button;
     }
 
     public void slotProvider(SlotProvider slotProvider) {
         this.iconProvider(slotProvider);
-        this.buttonProvider(slotProvider);
+        this.button(slotProvider);
     }
 }

@@ -1,39 +1,57 @@
 package org.lushplugins.guihandler.slot;
 
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
-import org.lushplugins.guihandler.gui.Gui;
+import org.jetbrains.annotations.Nullable;
 
-public interface SlotProvider extends IconProvider, ButtonProvider {
+public class SlotProvider implements IconProvider, Button {
+    private IconProvider iconProvider;
+    private Button button;
 
-    static SlotProvider create(@NotNull IconProvider iconProvider, @NotNull ButtonProvider buttonProvider) {
-        return new SlotProvider() {
-
-            @Override
-            public ItemStack icon(Gui gui, Slot slot) {
-                return iconProvider.icon(gui, slot);
-            }
-
-            @Override
-            public Button button(Gui gui, Slot slot) {
-                return buttonProvider.button(gui, slot);
-            }
-        };
+    public SlotProvider() {
+        this.iconProvider = (ignored) -> null;
+        this.button = (ignored) -> {};
     }
 
-    static SlotProvider create(IconProvider iconProvider) {
-        return create(iconProvider, (gui, slot) -> null);
+    public SlotProvider(IconProvider iconProvider, Button button) {
+        this.iconProvider = iconProvider;
+        this.button = button;
     }
 
-    static SlotProvider create(ItemStack item) {
-        return create((IconProvider) (gui, slot) -> item);
+    @Override
+    public @Nullable ItemStack icon(SlotContext context) {
+        return this.iconProvider.icon(context);
     }
 
-    static SlotProvider create(ButtonProvider buttonProvider) {
-        return create((gui, slot) -> null, buttonProvider);
+    @Override
+    public void click(SlotContext context) {
+        this.button.click(context);
     }
 
-    static SlotProvider create(Button button) {
-        return create((ButtonProvider) (gui, slot) -> button);
+    public IconProvider getIconProvider() {
+        return iconProvider;
+    }
+
+    public void setIconProvider(IconProvider iconProvider) {
+        this.iconProvider = iconProvider;
+    }
+
+    public Button getButton() {
+        return button;
+    }
+
+    public void setButton(Button button) {
+        this.button = button;
+    }
+
+    public static SlotProvider create(IconProvider iconProvider) {
+        return new SlotProvider(iconProvider, (context) -> {});
+    }
+
+    public static SlotProvider create(ItemStack item) {
+        return create((IconProvider) (context) -> item);
+    }
+
+    public static SlotProvider create(Button button) {
+        return new SlotProvider((context) -> null, button);
     }
 }

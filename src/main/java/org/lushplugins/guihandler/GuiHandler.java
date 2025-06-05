@@ -4,6 +4,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lushplugins.guihandler.annotation.AnnotationHandler;
 import org.lushplugins.guihandler.gui.GuiLayer;
 import org.lushplugins.guihandler.slot.*;
 import org.lushplugins.guihandler.gui.Gui;
@@ -15,10 +16,10 @@ public final class GuiHandler {
     private final JavaPlugin plugin;
     private final List<Listener> listeners = new ArrayList<>();
     private final Map<UUID, Gui> openGuis = new HashMap<>();
-    private final Map<String, ButtonProvider> buttonTypes;
+    private final Map<String, Button> buttonTypes;
     private final Map<Character, SlotProvider> defaultProviders;
 
-    private GuiHandler(JavaPlugin plugin, Map<String, ButtonProvider> buttonTypes, Map<Character, SlotProvider> defaultProviders) {
+    private GuiHandler(JavaPlugin plugin, Map<String, Button> buttonTypes, Map<Character, SlotProvider> defaultProviders) {
         this.plugin = plugin;
         this.buttonTypes = buttonTypes;
         this.defaultProviders = defaultProviders;
@@ -30,16 +31,24 @@ public final class GuiHandler {
         return plugin;
     }
 
-    public Gui.Builder guiBuilder(InventoryType inventoryType) {
-        return Gui.builder(this, inventoryType);
+    public Gui.Builder prepare(Object instance) {
+        Class<?> instanceClass = instance instanceof Class ? (Class<?>) instance : instance.getClass();
+        return AnnotationHandler.register(this, instanceClass, instance);
     }
 
-    public Gui.Builder guiBuilder(int size) {
-        return Gui.builder(this, size);
+    public Gui.Builder guiBuilder() {
+        return Gui.builder(this);
+    }
+
+    public Gui.Builder guiBuilder(InventoryType inventoryType) {
+        return Gui.builder(this)
+            .inventoryType(inventoryType);
     }
 
     public Gui.Builder guiBuilder(GuiLayer layer) {
-        return Gui.builder(this, layer);
+        return Gui.builder(this)
+            .size(layer.getSize())
+            .applyLayer(layer);
     }
 
     public Gui getOpenGui(UUID uuid) {
@@ -54,7 +63,7 @@ public final class GuiHandler {
         this.openGuis.remove(uuid);
     }
 
-    public ButtonProvider getButtonProvider(String id) {
+    public Button getButtonProvider(String id) {
         return this.buttonTypes.get(id);
     }
 
@@ -78,20 +87,16 @@ public final class GuiHandler {
 
     public static class Builder {
         private final JavaPlugin plugin;
-        private final Map<String, ButtonProvider> buttons = new HashMap<>();
+        private final Map<String, Button> buttons = new HashMap<>();
         private final Map<Character, SlotProvider> defaultLabels = new HashMap<>();
 
         private Builder(JavaPlugin plugin) {
             this.plugin = plugin;
         }
 
-        public Builder registerButtonType(String id, ButtonProvider provider) {
-            this.buttons.put(id, provider);
-            return this;
-        }
-
         public Builder registerButtonType(String id, Button button) {
-            return registerButtonType(id, (gui, slot) -> button);
+            this.buttons.put(id, button);
+            return this;
         }
 
         public Builder registerLabelProvider(char label, SlotProvider provider) {
