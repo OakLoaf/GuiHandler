@@ -1,5 +1,7 @@
 package org.lushplugins.guihandler.gui;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -24,17 +26,28 @@ public class Gui {
     private final GuiActor actor;
     private final boolean locked;
     private final Map<Character, LabelledSlotProvider> labelProviders;
+    private final Multimap<GuiAction, ActionCallable> actions;
     private final Map<Class<?>, Object> provided;
     // Consider replacing with a GuiData class to allow users to add custom data fields
     private int page = 1;
 
-    private Gui(GuiHandler instance, Inventory inventory, Slot[] slots, GuiActor actor, boolean locked, Map<Character, LabelledSlotProvider> labelProviders, Map<Class<?>, Object> provided) {
+    private Gui(
+        GuiHandler instance,
+        Inventory inventory,
+        Slot[] slots,
+        GuiActor actor,
+        boolean locked,
+        Map<Character, LabelledSlotProvider> labelProviders,
+        Multimap<GuiAction, ActionCallable> actions,
+        Map<Class<?>, Object> provided
+    ) {
         this.instance = instance;
         this.inventory = inventory;
         this.slots = slots;
         this.actor = actor;
         this.locked = locked;
         this.labelProviders = labelProviders;
+        this.actions = actions;
         this.provided = provided;
 
         refreshLabelIndexes();
@@ -127,6 +140,7 @@ public class Gui {
         }
 
         this.instance.setOpenGui(player.getUniqueId(), this);
+        callAction(GuiAction.CLOSE);
     }
 
     public void refresh(Slot slot) {
@@ -134,6 +148,8 @@ public class Gui {
     }
 
     public void refresh() {
+        callAction(GuiAction.REFRESH);
+
         Arrays.stream(this.slots)
             .collect(Collectors.groupingBy(Slot::label))
             .forEach((label, slots) -> {
@@ -146,6 +162,8 @@ public class Gui {
         for (Slot slot : this.slots) {
             refresh(slot);
         }
+
+        callAction(GuiAction.POST_REFRESH);
     }
 
     public void onClick(InventoryClickEvent event) {
@@ -244,7 +262,13 @@ public class Gui {
         this.actor.player().closeInventory();
     }
 
-    public void onClose(InventoryCloseEvent event) {}
+    public void onClose(InventoryCloseEvent event) {
+        callAction(GuiAction.CLOSE);
+    }
+
+    private void callAction(GuiAction action) {
+        this.actions.get(action).forEach(method -> method.call(new GuiContext(this)));
+    }
 
     public static Builder builder(GuiHandler instance) {
         return new Builder(instance);
@@ -258,6 +282,7 @@ public class Gui {
         private boolean locked = false;
         private final List<Character> slots = new ArrayList<>();
         private final Map<Character, SlotProvider> providers = new HashMap<>();
+        private final Multimap<GuiAction, ActionCallable> actions = HashMultimap.create();
         private final Map<Character, LabelledSlotProvider> labelProviders = new HashMap<>();
 
         private Builder(GuiHandler instance) {
@@ -331,6 +356,16 @@ public class Gui {
             return this;
         }
 
+        public Builder addAction(GuiAction action, ActionCallable callable) {
+            this.actions.put(action, callable);
+            return this;
+        }
+
+        public Builder clearActions() {
+            this.actions.clear();
+            return this;
+        }
+
         public Gui open(Player player, Object... provided) {
             return openWith(player, this.title, provided);
         }
@@ -368,7 +403,16 @@ public class Gui {
                     (existing, replacement) -> existing
                 ));
 
-            return new Gui(this.instance, inventory, slots, new GuiActor(player), this.locked, this.labelProviders, providedMap);
+            return new Gui(
+                this.instance,
+                inventory,
+                slots,
+                new GuiActor(player),
+                this.locked,
+                this.labelProviders,
+                this.actions,
+                providedMap
+            );
         }
     }
 }

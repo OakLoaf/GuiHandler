@@ -3,10 +3,12 @@ package org.lushplugins.guihandler.annotation;
 import org.jetbrains.annotations.NotNull;
 import org.lushplugins.guihandler.GuiHandler;
 import org.lushplugins.guihandler.gui.Gui;
+import org.lushplugins.guihandler.gui.GuiAction;
 import org.lushplugins.guihandler.parameter.GuiMethod;
 import org.lushplugins.guihandler.parameter.GuiParameter;
 import org.lushplugins.guihandler.parameter.ParameterProvider;
 import org.lushplugins.guihandler.parameter.ParameterProviders;
+import org.lushplugins.guihandler.slot.SlotContext;
 import org.lushplugins.guihandler.util.reflect.MethodCaller;
 import org.lushplugins.guihandler.util.reflect.MethodCallerFactory;
 import org.lushplugins.guihandler.util.reflect.Reflection;
@@ -89,7 +91,9 @@ public class AnnotationHandler {
                     builder.setIconProviderFor(label , guiMethod::call);
                 }
             } else if (annotations.contains(GuiEvent.class)) {
-                // TODO: Implement
+                GuiEvent methodAnnotation = annotations.get(GuiEvent.class);
+                GuiAction action = methodAnnotation.value();
+                builder.addAction(action, (context) -> guiMethod.call(new SlotContext(context.gui(), null)));
             }
         }
 
