@@ -323,12 +323,12 @@ public class Gui {
         public Builder applyLayer(GuiLayer layer) {
             layer.getSlotMap().forEach((label, slot) -> this.slot(slot, label));
             layer.getSlotProviders().forEach((label, provider) -> {
-                IconProvider iconProvider = provider.getIconProvider();
+                IconProvider iconProvider = provider.iconProvider();
                 if (iconProvider != IconProvider.EMPTY) {
                     this.setIconProviderFor(label, iconProvider);
                 }
 
-                Button button = provider.getButton();
+                Button button = provider.button();
                 if (button != Button.EMPTY) {
                     this.setButtonFor(label, button);
                 }
@@ -343,9 +343,9 @@ public class Gui {
 
         public Builder setIconProviderFor(char label, IconProvider provider) {
             if (this.providers.containsKey(label)) {
-                this.providers.get(label).setIconProvider(provider);
+                this.providers.get(label).iconProvider(provider);
             } else {
-                this.providers.put(label, SlotProvider.create(provider));
+                this.providers.put(label, new SlotProvider().iconProvider(provider));
             }
 
             return this;
@@ -353,9 +353,9 @@ public class Gui {
 
         public Builder setButtonFor(char label, Button button) {
             if (this.providers.containsKey(label)) {
-                this.providers.get(label).setButton(button);
+                this.providers.get(label).button(button);
             } else {
-                this.providers.put(label, SlotProvider.create(button));
+                this.providers.put(label, new SlotProvider().button(button));
             }
 
             return this;

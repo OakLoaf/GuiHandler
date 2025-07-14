@@ -12,6 +12,11 @@ public class SlotProvider implements IconProvider, Button {
         this.button = Button.EMPTY;
     }
 
+    /**
+     * @see #iconProvider(IconProvider)
+     * @see #button(Button)
+     */
+    @Deprecated
     public SlotProvider(IconProvider iconProvider, Button button) {
         this.iconProvider = iconProvider;
         this.button = button;
@@ -27,72 +32,49 @@ public class SlotProvider implements IconProvider, Button {
         this.button.click(context);
     }
 
-    public IconProvider getIconProvider() {
+    public IconProvider iconProvider() {
         return iconProvider;
     }
 
-    public void setIconProvider(IconProvider iconProvider) {
+    public SlotProvider iconProvider(IconProvider iconProvider) {
         this.iconProvider = iconProvider;
+        return this;
     }
 
-    public Button getButton() {
+    public SlotProvider icon(ItemStack item) {
+        return iconProvider((context) -> item);
+    }
+
+    public Button button() {
         return button;
     }
 
-    public void setButton(Button button) {
+    public SlotProvider button(Button button) {
         this.button = button;
+        return this;
     }
 
     /**
-     * @see #builder()
+     * @see #iconProvider(IconProvider)
      */
-    @Deprecated(forRemoval = true)
-    public static SlotProvider create(IconProvider iconProvider) {
-        return new SlotProvider(iconProvider, Button.EMPTY);
+    @Deprecated
+    public static SlotProvider create(IconProvider provider) {
+        return new SlotProvider().iconProvider(provider);
     }
 
     /**
-     * @see #builder()
+     * @see #icon(ItemStack)
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     public static SlotProvider create(ItemStack item) {
-        return create((IconProvider) (context) -> item);
+        return new SlotProvider().icon(item);
     }
 
     /**
-     * @see #builder()
+     * @see #button(Button)
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated
     public static SlotProvider create(Button button) {
-        return new SlotProvider(IconProvider.EMPTY, button);
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-        private IconProvider iconProvider = IconProvider.EMPTY;
-        private Button button = Button.EMPTY;
-
-        private Builder() {}
-
-        public Builder iconProvider(IconProvider iconProvider) {
-            this.iconProvider = iconProvider;
-            return this;
-        }
-
-        public Builder icon(ItemStack item) {
-            return this.iconProvider((context) -> item);
-        }
-
-        public Builder button(Button button) {
-            this.button = button;
-            return this;
-        }
-
-        public SlotProvider build() {
-            return new SlotProvider(this.iconProvider, this.button);
-        }
+        return new SlotProvider().button(button);
     }
 }
