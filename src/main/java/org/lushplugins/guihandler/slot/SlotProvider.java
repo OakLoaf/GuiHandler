@@ -43,15 +43,56 @@ public class SlotProvider implements IconProvider, Button {
         this.button = button;
     }
 
+    /**
+     * @see #builder()
+     */
+    @Deprecated(forRemoval = true)
     public static SlotProvider create(IconProvider iconProvider) {
         return new SlotProvider(iconProvider, Button.EMPTY);
     }
 
+    /**
+     * @see #builder()
+     */
+    @Deprecated(forRemoval = true)
     public static SlotProvider create(ItemStack item) {
         return create((IconProvider) (context) -> item);
     }
 
+    /**
+     * @see #builder()
+     */
+    @Deprecated(forRemoval = true)
     public static SlotProvider create(Button button) {
         return new SlotProvider(IconProvider.EMPTY, button);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private IconProvider iconProvider = IconProvider.EMPTY;
+        private Button button = Button.EMPTY;
+
+        private Builder() {}
+
+        public Builder iconProvider(IconProvider iconProvider) {
+            this.iconProvider = iconProvider;
+            return this;
+        }
+
+        public Builder icon(ItemStack item) {
+            return this.iconProvider((context) -> item);
+        }
+
+        public Builder button(Button button) {
+            this.button = button;
+            return this;
+        }
+
+        public SlotProvider build() {
+            return new SlotProvider(this.iconProvider, this.button);
+        }
     }
 }
