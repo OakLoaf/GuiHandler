@@ -6,12 +6,14 @@ import org.lushplugins.guihandler.annotation.Slot;
 import org.lushplugins.guihandler.annotation.Slots;
 import org.lushplugins.guihandler.gui.Gui;
 import org.lushplugins.guihandler.gui.GuiActor;
+import org.lushplugins.guihandler.slot.SlotContext;
 
 import java.util.Arrays;
 import java.util.Map;
 
 public class ParameterProviders {
     public static final Map<Class<?>, ParameterProvider<?>> DEFAULT_PROVIDERS = Map.ofEntries(
+        ParameterProvider.Factory.forType(SlotContext.class, (type, context) -> context),
         ParameterProvider.Factory.forType(GuiHandler.class, (type, context) -> context.gui().instance()),
         ParameterProvider.Factory.forType(Gui.class, (type, context) -> context.gui()),
         ParameterProvider.Factory.forType(org.lushplugins.guihandler.slot.Slot.class, (type, context) -> context.slot()),
