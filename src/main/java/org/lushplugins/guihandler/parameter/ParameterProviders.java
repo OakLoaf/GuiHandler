@@ -1,6 +1,7 @@
 package org.lushplugins.guihandler.parameter;
 
 import org.bukkit.inventory.Inventory;
+import org.lushplugins.guihandler.GuiHandler;
 import org.lushplugins.guihandler.annotation.Slot;
 import org.lushplugins.guihandler.annotation.Slots;
 import org.lushplugins.guihandler.gui.Gui;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 public class ParameterProviders {
     public static final Map<Class<?>, ParameterProvider<?>> DEFAULT_PROVIDERS = Map.ofEntries(
+        ParameterProvider.Factory.forType(GuiHandler.class, (type, context) -> context.gui().instance()),
         ParameterProvider.Factory.forType(Gui.class, (type, context) -> context.gui()),
         ParameterProvider.Factory.forType(org.lushplugins.guihandler.slot.Slot.class, (type, context) -> context.slot()),
         ParameterProvider.Factory.forType(GuiActor.class, (type, context) -> context.gui().actor()),

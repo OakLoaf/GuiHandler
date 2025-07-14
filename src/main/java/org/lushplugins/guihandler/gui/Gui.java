@@ -54,6 +54,10 @@ public class Gui {
         open();
     }
 
+    public GuiHandler instance() {
+        return instance;
+    }
+
     public Inventory inventory() {
         return inventory;
     }
