@@ -87,6 +87,10 @@ public class Gui {
         }
     }
 
+    public @Nullable LabelledSlotProvider getProviderFor(char label) {
+        return this.labelProviders.get(label);
+    }
+
     public void setProviderFor(char label, LabelledSlotProvider provider) {
         this.labelProviders.put(label, provider);
     }
