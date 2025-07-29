@@ -297,10 +297,18 @@ public class Gui {
             this.instance = instance;
         }
 
+        public InventoryType inventoryType() {
+            return inventoryType;
+        }
+
         public Builder inventoryType(InventoryType inventoryType) {
             this.inventoryType = inventoryType;
             this.size = inventoryType.getDefaultSize();
             return this;
+        }
+
+        public int size() {
+            return size;
         }
 
         public Builder size(int size) {
@@ -308,9 +316,17 @@ public class Gui {
             return this;
         }
 
+        public String title() {
+            return title;
+        }
+
         public Builder title(String title) {
             this.title = title;
             return this;
+        }
+
+        public boolean locked() {
+            return locked;
         }
 
         public Builder locked(boolean locked) {
