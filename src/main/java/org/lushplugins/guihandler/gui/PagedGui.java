@@ -11,14 +11,14 @@ public interface PagedGui<T> {
 
     Comparator<T> getContentSortMethod();
 
-    private Stream<T> getPageContentStream(GuiActor actor, int page, int pageSize) {
+    default Stream<T> getPageContentStream(GuiActor actor, int page, int pageSize) {
         return getContentStream(actor)
             .sorted(this.getContentSortMethod())
             .skip((long) (page - 1) * pageSize)
             .limit(pageSize);
     }
 
-    private ArrayDeque<T> getPageContent(GuiActor actor, int page, int pageSize) {
+    default ArrayDeque<T> getPageContent(GuiActor actor, int page, int pageSize) {
         return getPageContentStream(actor, page, pageSize).collect(Collectors.toCollection(ArrayDeque::new));
     }
 }
