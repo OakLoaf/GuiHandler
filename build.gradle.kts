@@ -39,6 +39,8 @@ tasks {
     }
 
     shadowJar {
+        relocate("org.lushplugins.chatcolorhandler", "org.lushplugins.guihandler.libraries.chatcolorhandler")
+
         minimize()
 
         archiveFileName.set("${project.name}-${project.version}.jar")
