@@ -181,6 +181,10 @@ public class Gui {
         }
 
         int rawSlot = event.getRawSlot();
+        if (rawSlot > this.slots.length) {
+            return;
+        }
+
         Slot slot = this.slot(rawSlot);
         if (slot != null) {
             try {
