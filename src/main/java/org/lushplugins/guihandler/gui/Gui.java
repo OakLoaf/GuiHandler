@@ -33,18 +33,18 @@ public class Gui {
 
     private Gui(
         GuiHandler instance,
+        GuiActor actor,
         Inventory inventory,
         Slot[] slots,
-        GuiActor actor,
         boolean locked,
         Map<Character, LabelledSlotProvider> labelProviders,
         Multimap<GuiAction, ActionCallable> actions,
         Map<Class<?>, Object> provided
     ) {
         this.instance = instance;
+        this.actor = actor;
         this.inventory = inventory;
         this.slots = slots;
-        this.actor = actor;
         this.locked = locked;
         this.labelProviders = labelProviders;
         this.actions = actions;
@@ -289,9 +289,9 @@ public class Gui {
     public static class Builder {
         public static final GuiConstructor<Gui> DEFAULT_GUI_CONSTRUCTOR = (builder, player, inventory, slots, providedMap) -> new Gui(
             builder.instance(),
+            new GuiActor(player),
             inventory,
             slots,
-            new GuiActor(player),
             builder.locked(),
             builder.labelledSlotProviders(),
             builder.actions(),
