@@ -7,18 +7,18 @@ import java.util.stream.Stream;
 
 public interface PagedGui<T> {
 
-    Stream<T> getContentStream(GuiActor actor);
+    Stream<T> getContentStream(Gui gui);
 
     Comparator<T> getContentSortMethod();
 
-    default Stream<T> getPageContentStream(GuiActor actor, int page, int pageSize) {
-        return getContentStream(actor)
+    default Stream<T> getPageContentStream(Gui gui, int page, int pageSize) {
+        return getContentStream(gui)
             .sorted(this.getContentSortMethod())
             .skip((long) (page - 1) * pageSize)
             .limit(pageSize);
     }
 
-    default ArrayDeque<T> getPageContent(GuiActor actor, int page, int pageSize) {
-        return getPageContentStream(actor, page, pageSize).collect(Collectors.toCollection(ArrayDeque::new));
+    default ArrayDeque<T> getPageContent(Gui gui, int page, int pageSize) {
+        return getPageContentStream(gui, page, pageSize).collect(Collectors.toCollection(ArrayDeque::new));
     }
 }
