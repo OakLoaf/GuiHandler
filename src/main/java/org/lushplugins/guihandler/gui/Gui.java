@@ -287,6 +287,17 @@ public class Gui {
     }
 
     public static class Builder {
+        public static final GuiConstructor<Gui> DEFAULT_GUI_CONSTRUCTOR = (builder, player, inventory, slots, providedMap) -> new Gui(
+            builder.instance(),
+            inventory,
+            slots,
+            new GuiActor(player),
+            builder.locked(),
+            builder.labelledSlotProviders(),
+            builder.actions(),
+            providedMap
+        );
+
         private final GuiHandler instance;
         private InventoryType inventoryType = InventoryType.CHEST;
         private int size = 27;
@@ -299,6 +310,10 @@ public class Gui {
 
         private Builder(GuiHandler instance) {
             this.instance = instance;
+        }
+
+        public GuiHandler instance() {
+            return instance;
         }
 
         public InventoryType inventoryType() {
@@ -364,6 +379,10 @@ public class Gui {
             return this;
         }
 
+        public Map<Character, SlotProvider> getSlotProviders() {
+            return providers;
+        }
+
         public Builder setSlotProviderFor(char label, SlotProvider provider) {
             this.providers.put(label, provider);
             return this;
@@ -389,9 +408,17 @@ public class Gui {
             return this;
         }
 
+        public Map<Character, LabelledSlotProvider> labelledSlotProviders() {
+            return labelProviders;
+        }
+
         public Builder setSlotProviderFor(char label, LabelledSlotProvider provider) {
             this.labelProviders.put(label, provider);
             return this;
+        }
+
+        public Multimap<GuiAction, ActionCallable> actions() {
+            return actions;
         }
 
         public Builder addAction(GuiAction action, ActionCallable callable) {
@@ -409,6 +436,10 @@ public class Gui {
         }
 
         public Gui openWith(Player player, String title, Object... provided) {
+            return openWith(player, title, DEFAULT_GUI_CONSTRUCTOR, provided);
+        }
+
+        public <T extends Gui> T openWith(Player player, String title, GuiConstructor<T> guiConstructor, Object... provided) {
             Inventory inventory;
             Slot[] slots;
             if (this.inventoryType == InventoryType.CHEST) {
@@ -441,16 +472,12 @@ public class Gui {
                     (existing, replacement) -> existing
                 ));
 
-            return new Gui(
-                this.instance,
-                inventory,
-                slots,
-                new GuiActor(player),
-                this.locked,
-                this.labelProviders,
-                this.actions,
-                providedMap
-            );
+            return guiConstructor.construct(this, player, inventory, slots, providedMap);
         }
+    }
+
+    @FunctionalInterface
+    public interface GuiConstructor<T extends Gui> {
+        T construct(Builder builder, Player player, Inventory inventory, Slot[] slots, Map<Class<?>, Object> provided);
     }
 }
