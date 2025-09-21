@@ -181,13 +181,9 @@ public class Gui {
         }
 
         int rawSlot = event.getRawSlot();
-        if (rawSlot > this.slots.length) {
-            return;
-        }
-
-        Slot slot = this.slot(rawSlot);
-        if (slot != null) {
+        if (rawSlot <= this.slots.length) {
             try {
+                Slot slot = this.slot(rawSlot);
                 slot.click(event, this);
             } catch (Throwable e) {
                 e.printStackTrace();
