@@ -1,5 +1,6 @@
 package org.lushplugins.guihandler.slot;
 
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,8 +29,8 @@ public class SlotProvider implements IconProvider, Button {
     }
 
     @Override
-    public void click(SlotContext context) {
-        this.button.click(context);
+    public void click(InventoryClickEvent event, SlotContext context) {
+        this.button.click(event, context);
     }
 
     public IconProvider iconProvider() {

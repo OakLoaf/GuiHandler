@@ -83,12 +83,12 @@ public class AnnotationHandler {
             if (annotations.contains(ButtonProvider.class)) {
                 ButtonProvider methodAnnotation = annotations.get(ButtonProvider.class);
                 for (char label : methodAnnotation.value()) {
-                    builder.setButtonFor(label , guiMethod::call);
+                    builder.setButtonFor(label, (event, context) -> guiMethod.call(context));
                 }
             } else if (annotations.contains(IconProvider.class)) {
                 IconProvider methodAnnotation = annotations.get(IconProvider.class);
                 for (char label : methodAnnotation.value()) {
-                    builder.setIconProviderFor(label , guiMethod::call);
+                    builder.setIconProviderFor(label, guiMethod::call);
                 }
             } else if (annotations.contains(GuiEvent.class)) {
                 GuiEvent methodAnnotation = annotations.get(GuiEvent.class);

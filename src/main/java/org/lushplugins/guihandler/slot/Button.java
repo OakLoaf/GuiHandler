@@ -4,9 +4,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 
 @FunctionalInterface
 public interface Button {
-    void click(SlotContext context);
+    void click(InventoryClickEvent event, SlotContext context);
 
-    default void click(InventoryClickEvent event) {}
-
-    Button EMPTY = (ignored) -> {};
+    Button EMPTY = (ignored1, ignored2) -> {};
 }

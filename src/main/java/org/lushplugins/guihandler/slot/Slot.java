@@ -65,8 +65,7 @@ public class Slot {
 
     public void click(InventoryClickEvent event, Gui gui) {
         if (this.button != null) {
-            this.button.click(new SlotContext(gui, this));
-            this.button.click(event);
+            this.button.click(event, new SlotContext(gui, this));
         }
     }
 
