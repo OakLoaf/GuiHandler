@@ -10,8 +10,8 @@ public class Slot {
     private char label;
     private Integer labelIndex;
     private boolean locked = true;
-    private IconProvider iconProvider;
-    private Button button;
+    private IconProvider iconProvider = IconProvider.EMPTY;
+    private Button button = Button.EMPTY;
 
     public Slot(int rawSlot, char label, @Nullable Integer labelIndex) {
         this.rawSlot = rawSlot;
