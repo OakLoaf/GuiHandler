@@ -1,81 +1,75 @@
 package org.lushplugins.guihandler.slot;
 
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
-public class SlotProvider implements IconProvider, Button {
-    private IconProvider iconProvider;
-    private Button button;
+public interface SlotProvider extends IconProvider, Button {
 
-    public SlotProvider() {
-        this.iconProvider = IconProvider.EMPTY;
-        this.button = Button.EMPTY;
+    /**
+     * @return a new or modified {@link SlotProvider} with the provided {@link IconProvider}
+     */
+    SlotProvider with(IconProvider iconProvider);
+
+    /**
+     * @return a new or modified {@link SlotProvider} with the provided {@link Button}
+     */
+    SlotProvider with(Button button);
+
+    /**
+     * @see #builder#iconProvider(IconProvider)
+     */
+    @Deprecated
+    static SlotProvider create(IconProvider provider) {
+        return builder()
+            .iconProvider(provider)
+            .build();
     }
 
     /**
-     * @see #iconProvider(IconProvider)
-     * @see #button(Button)
+     * @see #builder#icon(ItemStack)
      */
     @Deprecated
-    public SlotProvider(IconProvider iconProvider, Button button) {
-        this.iconProvider = iconProvider;
-        this.button = button;
-    }
-
-    @Override
-    public @Nullable ItemStack icon(SlotContext context) {
-        return this.iconProvider.icon(context);
-    }
-
-    @Override
-    public void click(InventoryClickEvent event, SlotContext context) {
-        this.button.click(event, context);
-    }
-
-    public IconProvider iconProvider() {
-        return iconProvider;
-    }
-
-    public SlotProvider iconProvider(IconProvider iconProvider) {
-        this.iconProvider = iconProvider;
-        return this;
-    }
-
-    public SlotProvider icon(ItemStack item) {
-        return iconProvider((context) -> item);
-    }
-
-    public Button button() {
-        return button;
-    }
-
-    public SlotProvider button(Button button) {
-        this.button = button;
-        return this;
+    static SlotProvider create(ItemStack item) {
+        return builder()
+            .icon(item)
+            .build();
     }
 
     /**
-     * @see #iconProvider(IconProvider)
+     * @see #builder#button(Button)
      */
     @Deprecated
-    public static SlotProvider create(IconProvider provider) {
-        return new SlotProvider().iconProvider(provider);
+    static SlotProvider create(Button button) {
+        return builder()
+            .button(button)
+            .build();
     }
 
-    /**
-     * @see #icon(ItemStack)
-     */
-    @Deprecated
-    public static SlotProvider create(ItemStack item) {
-        return new SlotProvider().icon(item);
+    static Builder builder() {
+        return new Builder();
     }
 
-    /**
-     * @see #button(Button)
-     */
-    @Deprecated
-    public static SlotProvider create(Button button) {
-        return new SlotProvider().button(button);
+    class Builder {
+        private IconProvider iconProvider = IconProvider.EMPTY;
+        private Button button = Button.EMPTY;
+
+        private Builder() {}
+
+        public Builder iconProvider(IconProvider iconProvider) {
+            this.iconProvider = iconProvider;
+            return this;
+        }
+
+        public Builder icon(ItemStack item) {
+            return iconProvider((context) -> item);
+        }
+
+        public Builder button(Button button) {
+            this.button = button;
+            return this;
+        }
+
+        public SlotProvider build() {
+            return new BasicSlotProvider(this.iconProvider, this.button);
+        }
     }
 }

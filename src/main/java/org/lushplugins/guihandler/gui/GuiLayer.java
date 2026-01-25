@@ -1,13 +1,13 @@
 package org.lushplugins.guihandler.gui;
 
 import com.google.common.collect.TreeMultimap;
-import org.lushplugins.guihandler.slot.SlotProvider;
+import org.lushplugins.guihandler.slot.BasicSlotProvider;
 
 import java.util.*;
 
 public class GuiLayer {
     private final List<String> rows;
-    private final Map<Character, SlotProvider> providers = new HashMap<>();
+    private final Map<Character, BasicSlotProvider> providers = new HashMap<>();
 
     public GuiLayer(List<String> rows) {
         if (rows.stream().anyMatch(row -> row.length() != 9)) {
@@ -53,15 +53,19 @@ public class GuiLayer {
         return rows.size() * 9;
     }
 
-    public Map<Character, SlotProvider> getSlotProviders() {
+    public Map<Character, BasicSlotProvider> getSlotProviders() {
         return providers;
     }
 
-    public SlotProvider getSlotProvider(char character) {
+    public boolean hasSlotProvider(char character) {
+        return this.providers.containsKey(character);
+    }
+
+    public BasicSlotProvider getSlotProvider(char character) {
         return this.providers.get(character);
     }
 
-    public void setSlotProvider(char character, SlotProvider provider) {
+    public void setSlotProvider(char character, BasicSlotProvider provider) {
         this.providers.put(character, provider);
     }
 

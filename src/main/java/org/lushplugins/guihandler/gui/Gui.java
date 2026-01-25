@@ -70,7 +70,6 @@ public class Gui {
         return Arrays.copyOf(this.slots, this.slots.length);
     }
 
-    // TODO: Ensure it's not possible for the slot array to contain `null`
     public Slot slot(int slot) {
         return this.slots[slot];
     }
@@ -102,8 +101,7 @@ public class Gui {
     public void applyLayer(GuiLayer layer) {
         TreeMultimap<Character, Integer> slotMap = layer.getSlotMap();
         for (char label : slotMap.keySet()) {
-            SlotProvider provider = Optional.ofNullable(layer.getSlotProvider(label))
-                .orElseGet(() -> this.instance.getDefaultProvider(label));
+            SlotProvider provider = layer.hasSlotProvider(label) ? layer.getSlotProvider(label) : this.instance.getDefaultProvider(label);
             if (provider == null) {
                 continue;
             }
@@ -384,23 +382,31 @@ public class Gui {
             return this;
         }
 
-        public Builder setIconProviderFor(char label, IconProvider provider) {
+        public Builder setIconProviderFor(char label, IconProvider iconProvider) {
+            SlotProvider slotProvider;
             if (this.providers.containsKey(label)) {
-                this.providers.get(label).iconProvider(provider);
+                slotProvider = this.providers.get(label).with(iconProvider);
             } else {
-                this.providers.put(label, new SlotProvider().iconProvider(provider));
+                slotProvider = SlotProvider.builder()
+                    .iconProvider(iconProvider)
+                    .build();
             }
 
+            this.providers.put(label, slotProvider);
             return this;
         }
 
         public Builder setButtonFor(char label, Button button) {
+            SlotProvider slotProvider;
             if (this.providers.containsKey(label)) {
-                this.providers.get(label).button(button);
+                slotProvider = this.providers.get(label).with(button);
             } else {
-                this.providers.put(label, new SlotProvider().button(button));
+                slotProvider = SlotProvider.builder()
+                    .button(button)
+                    .build();
             }
 
+            this.providers.put(label, slotProvider);
             return this;
         }
 
