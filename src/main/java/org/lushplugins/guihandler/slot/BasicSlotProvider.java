@@ -4,11 +4,27 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public record BasicSlotProvider(IconProvider iconProvider, Button button) implements SlotProvider {
+@SuppressWarnings("ClassCanBeRecord")
+public class BasicSlotProvider implements SlotProvider {
+    private final IconProvider iconProvider;
+    private final Button button;
+
+    public BasicSlotProvider(IconProvider iconProvider, Button button) {
+        this.iconProvider = iconProvider;
+        this.button = button;
+    }
+
+    public IconProvider iconProvider() {
+        return this.iconProvider;
+    }
 
     @Override
     public @Nullable ItemStack icon(SlotContext context) {
         return this.iconProvider.icon(context);
+    }
+
+    public Button button() {
+        return this.button;
     }
 
     @Override
