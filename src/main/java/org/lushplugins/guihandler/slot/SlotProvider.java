@@ -38,7 +38,7 @@ public interface SlotProvider extends IconProvider, Button {
             return this;
         }
 
-        public SlotProvider build() {
+        public BasicSlotProvider build() {
             return new BasicSlotProvider(this.iconProvider, this.button);
         }
     }
