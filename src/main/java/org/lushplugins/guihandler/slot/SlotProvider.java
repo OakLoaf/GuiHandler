@@ -14,36 +14,6 @@ public interface SlotProvider extends IconProvider, Button {
      */
     SlotProvider with(Button button);
 
-    /**
-     * @see #builder#iconProvider(IconProvider)
-     */
-    @Deprecated
-    static SlotProvider create(IconProvider provider) {
-        return builder()
-            .iconProvider(provider)
-            .build();
-    }
-
-    /**
-     * @see #builder#icon(ItemStack)
-     */
-    @Deprecated
-    static SlotProvider create(ItemStack item) {
-        return builder()
-            .icon(item)
-            .build();
-    }
-
-    /**
-     * @see #builder#button(Button)
-     */
-    @Deprecated
-    static SlotProvider create(Button button) {
-        return builder()
-            .button(button)
-            .build();
-    }
-
     static Builder builder() {
         return new Builder();
     }
