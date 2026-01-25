@@ -3,6 +3,7 @@ package org.lushplugins.guihandler.slot;
 import org.bukkit.inventory.ItemStack;
 
 public interface SlotProvider extends IconProvider, Button {
+    SlotProvider EMPTY = SlotProvider.builder().build();
 
     /**
      * @return a new or modified {@link SlotProvider} with the provided {@link IconProvider}
