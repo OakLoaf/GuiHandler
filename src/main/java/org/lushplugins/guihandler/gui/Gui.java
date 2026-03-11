@@ -16,6 +16,7 @@ import org.lushplugins.guihandler.slot.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +69,12 @@ public class Gui {
 
     public Slot[] slots() {
         return Arrays.copyOf(this.slots, this.slots.length);
+    }
+
+    public List<Slot> slots(Predicate<Slot> predicate) {
+        return Arrays.stream(this.slots)
+            .filter(predicate)
+            .toList();
     }
 
     public Slot slot(int slot) {

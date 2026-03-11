@@ -35,17 +35,15 @@ public class ParameterProviders {
         if (labels.length == 1 && labels[0] == Slots.DEFAULT_LABEL) {
             return (type, context) -> context.gui().slots();
         } else {
-            return (type, context) -> Arrays.stream(context.gui().slots())
-                .filter(slot -> {
-                    for (char label : labels) {
-                        if (label == slot.label()) {
-                            return true;
-                        }
+            return (type, context) -> context.gui().slots(slot -> {
+                for (char label : labels) {
+                    if (label == slot.label()) {
+                        return true;
                     }
+                }
 
-                    return false;
-                })
-                .toList();
+                return false;
+            });
         }
     }
 }
