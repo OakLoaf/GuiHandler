@@ -18,6 +18,10 @@ public class Reflection {
         Class<?> current = clazz;
         while (current != null && current != Object.class) {
             Collections.addAll(methods, current.getDeclaredMethods());
+            for (Class<?> interfaceClass : current.getInterfaces()) {
+                Collections.addAll(methods, interfaceClass.getDeclaredMethods());
+            }
+
             current = current.getSuperclass();
         }
 
