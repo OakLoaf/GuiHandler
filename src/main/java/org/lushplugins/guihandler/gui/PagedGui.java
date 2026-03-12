@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.lushplugins.guihandler.annotation.ButtonProvider;
 import org.lushplugins.guihandler.annotation.IconProvider;
 import org.lushplugins.guihandler.slot.Slot;
+import org.lushplugins.guihandler.slot.SlotContext;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -31,14 +32,16 @@ public interface PagedGui<T> {
     }
 
     /**
+     * @param context context for where the item will be used
      * @param active whether the previous page button can currently be used
      */
-    ItemStack getNextPageIcon(boolean active);
+    ItemStack getNextPageIcon(SlotContext context, boolean active);
 
     /**
+     * @param context context for where the item will be used
      * @param active whether the previous page button can currently be used
      */
-    ItemStack getPreviousPageIcon(boolean active);
+    ItemStack getPreviousPageIcon(SlotContext context, boolean active);
 
     @ButtonProvider('>')
     default void nextPageButton(Gui gui) {
@@ -52,12 +55,13 @@ public interface PagedGui<T> {
     }
 
     @IconProvider('>')
-    default ItemStack nextPageButtonIcon(Gui gui) {
+    default ItemStack nextPageButtonIcon(SlotContext context) {
+        Gui gui = context.gui();
         List<Slot> slots = gui.slots(slot -> slot.label() == getContentLabel());
         int pageSize = slots.size();
 
         Stream<T> content = this.getPageContentStream(gui, gui.page(), pageSize);
-        return getNextPageIcon(content.count() == pageSize);
+        return getNextPageIcon(context, content.count() == pageSize);
     }
 
     @ButtonProvider('<')
@@ -68,7 +72,7 @@ public interface PagedGui<T> {
     }
 
     @IconProvider('<')
-    default ItemStack prevPageButtonIcon(Gui gui) {
-        return getPreviousPageIcon(gui.page() > 1);
+    default ItemStack prevPageButtonIcon(SlotContext context) {
+        return getPreviousPageIcon(context, context.gui().page() > 1);
     }
 }
