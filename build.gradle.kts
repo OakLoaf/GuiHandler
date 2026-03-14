@@ -6,7 +6,6 @@ plugins {
 
 allprojects {
     apply(plugin = "java-library")
-    apply(plugin = "maven-publish")
     apply(plugin = "com.gradleup.shadow")
 
     group = "org.lushplugins"
@@ -50,6 +49,10 @@ allprojects {
             archiveFileName.set("${project.name}-${project.version}.jar")
         }
     }
+}
+
+subprojects {
+    apply(plugin = "maven-publish")
 
     publishing {
         repositories {
