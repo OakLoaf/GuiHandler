@@ -1,8 +1,10 @@
 dependencies {
     // Dependencies
     compileOnly(project(":common"))
-    compileOnly("org.lushplugins:ChatColorHandler:6.0.4")
 
     // Libraries
-    implementation("org.lushplugins.lushlib:skullcreator:0.10.89")
+    api("org.lushplugins.lushlib:item:1.0.0-alpha.1")
+    implementation("org.lushplugins.lushlib:config:1.0.0-alpha.1")
+    implementation("org.lushplugins.lushlib:common:1.0.0-alpha.1")
+    implementation("org.lushplugins.lushlib:utils:1.0.0-alpha.1")
 }

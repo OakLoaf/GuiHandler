@@ -66,7 +66,7 @@ public class GuiConfig {
         return this.format.get(row).charAt(slot % 9);
     }
 
-    public void applyTo(Gui.Builder builder) {
+    public Gui.Builder applyTo(Gui.Builder builder) {
         builder.title(title);
         builder.size(this.size());
         this.slotMap().forEach((label, slotIndex) -> builder.slot(slotIndex, label));
@@ -74,5 +74,7 @@ public class GuiConfig {
             builder.setIconFor(label, slot.icon());
             builder.setActionFor(label, slot.action());
         });
+
+        return builder;
     }
 }
