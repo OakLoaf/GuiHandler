@@ -8,11 +8,10 @@ import org.lushplugins.guihandler.slot.SlotIcon;
 import org.lushplugins.lushlib.config.YamlConverter;
 import org.lushplugins.lushlib.item.DisplayItemStack;
 
-public class IconConfig implements SlotIcon {
-    private final DisplayItemStack icon;
+public record IconConfig(DisplayItemStack icon) implements SlotIcon {
 
     public IconConfig(ConfigurationSection config) {
-        this.icon = YamlConverter.getDisplayItem(config);
+        this(YamlConverter.getDisplayItem(config));
     }
 
     @Override

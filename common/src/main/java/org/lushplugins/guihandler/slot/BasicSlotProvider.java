@@ -14,6 +14,11 @@ public class BasicSlotProvider implements SlotProvider {
         this.action = action;
     }
 
+    @Override
+    public boolean hasIcon() {
+        return icon != null;
+    }
+
     public SlotIcon icon() {
         return this.icon;
     }
@@ -21,6 +26,11 @@ public class BasicSlotProvider implements SlotProvider {
     @Override
     public @Nullable ItemStack icon(SlotContext context) {
         return this.icon != null ? this.icon.icon(context) : null;
+    }
+
+    @Override
+    public boolean hasAction() {
+        return action != null;
     }
 
     public SlotAction action() {

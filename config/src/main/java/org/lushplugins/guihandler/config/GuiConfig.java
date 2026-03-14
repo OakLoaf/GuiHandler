@@ -71,8 +71,13 @@ public class GuiConfig {
         builder.size(this.size());
         this.slotMap().forEach((label, slotIndex) -> builder.slot(slotIndex, label));
         slots.forEach((label, slot) -> {
-            builder.setIconFor(label, slot.icon());
-            builder.setActionFor(label, slot.action());
+            if (!builder.hasIconFor(label)) {
+                builder.setIconFor(label, slot.icon());
+            }
+
+            if (!builder.hasActionFor(label)) {
+                builder.setActionFor(label, slot.action());
+            }
         });
 
         return builder;

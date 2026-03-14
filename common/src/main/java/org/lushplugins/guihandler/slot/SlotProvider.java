@@ -6,6 +6,10 @@ import org.jetbrains.annotations.Nullable;
 public interface SlotProvider extends SlotIcon, SlotAction {
     SlotProvider EMPTY = SlotProvider.builder().build();
 
+    boolean hasIcon();
+
+    boolean hasAction();
+
     /**
      * @return a new or modified {@link SlotProvider} with the provided {@link SlotIcon}
      */

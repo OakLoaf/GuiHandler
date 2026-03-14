@@ -356,6 +356,11 @@ public class Gui {
             return this;
         }
 
+        public boolean hasIconFor(char label) {
+            SlotProvider slotProvider = providers.get(label);
+            return slotProvider != null && slotProvider.hasIcon();
+        }
+
         public Builder setIconFor(char label, SlotIcon iconProvider) {
             SlotProvider slotProvider;
             if (this.providers.containsKey(label)) {
@@ -368,6 +373,11 @@ public class Gui {
 
             this.providers.put(label, slotProvider);
             return this;
+        }
+
+        public boolean hasActionFor(char label) {
+            SlotProvider slotProvider = providers.get(label);
+            return slotProvider != null && slotProvider.hasAction();
         }
 
         public Builder setActionFor(char label, SlotAction action) {
