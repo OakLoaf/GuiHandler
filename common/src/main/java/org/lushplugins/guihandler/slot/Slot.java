@@ -10,8 +10,8 @@ public class Slot {
     private char label;
     private Integer labelIndex;
     private boolean locked = true;
-    private SlotIcon icon;
-    private SlotAction action;
+    private @Nullable SlotIcon icon;
+    private @Nullable SlotAction action;
 
     public Slot(int rawSlot, char label, @Nullable Integer labelIndex) {
         this.rawSlot = rawSlot;
@@ -60,7 +60,7 @@ public class Slot {
     }
 
     public @Nullable ItemStack icon(Gui gui) {
-        return this.icon.icon(new SlotContext(gui, this));
+        return this.icon != null ? this.icon.icon(new SlotContext(gui, this)) : null;
     }
 
     public void action(@Nullable SlotAction action) {
