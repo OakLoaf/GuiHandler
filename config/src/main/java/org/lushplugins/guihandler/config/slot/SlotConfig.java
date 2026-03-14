@@ -21,27 +21,23 @@ public class SlotConfig {
         return action;
     }
 
-    private static IconConfig readIcon(ConfigurationSection config, String path) {
+    public static IconConfig readIcon(ConfigurationSection config, String path) {
         return config.contains(path) ? new IconConfig(config.getConfigurationSection(path)) : null;
     }
 
-    private static SlotAction readAction(ConfigurationSection config, String path) {
+    public static SlotAction readAction(ConfigurationSection config, String path) {
         if (config.isConfigurationSection(path)) {
             String type = config.getString("type");
-            return SlotActionRegistry.construct(type, config.getConfigurationSection(path));
-        } else if (config.isString(path)) {
-            String type = config.getString(path);
             if (type == null) {
-                type = switch (config.getName()) {
-                    case ">" -> "next_page";
-                    case "<" -> "previous_page";
-                    default -> null;
-                };
+                type = SlotActionRegistry.getDefaultAction(config.getName());
             }
 
             if (type != null) {
-                return SlotActionRegistry.construct(type, null);
+                return SlotActionRegistry.construct(type, config.getConfigurationSection(path));
             }
+        } else if (config.isString(path)) {
+            String type = config.getString(path);
+            return SlotActionRegistry.construct(type, null);
         }
 
         return null;
