@@ -2,7 +2,7 @@ package org.lushplugins.guihandler.parameter;
 
 import org.bukkit.inventory.Inventory;
 import org.lushplugins.guihandler.GuiHandler;
-import org.lushplugins.guihandler.annotation.Slot;
+import org.lushplugins.guihandler.annotation.SlotAt;
 import org.lushplugins.guihandler.annotation.LabelledSlots;
 import org.lushplugins.guihandler.gui.Gui;
 import org.lushplugins.guihandler.gui.GuiActor;
@@ -23,7 +23,7 @@ public class ParameterProviders {
     public static final ParameterProvider<?> PROVIDED_TYPE = (type, context) -> context.gui().provided(type);
 
 
-    public static ParameterProvider<?> createSlotProvider(Slot annotation) {
+    public static ParameterProvider<?> createSlotProvider(SlotAt annotation) {
         int rawSlot = annotation.value();
         return (type, context) -> context.gui().slot(rawSlot);
     }

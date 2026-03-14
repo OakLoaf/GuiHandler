@@ -61,9 +61,9 @@ public class AnnotationHandler {
                 ParameterProvider<?> provider;
                 if (parameterAnnotations.contains(Provided.class)) {
                     provider = ParameterProviders.PROVIDED_TYPE;
-                } else if (parameterAnnotations.contains(Slot.class)) {
-                    Slot slotAnnotation = parameterAnnotations.get(Slot.class);
-                    provider = ParameterProviders.createSlotProvider(slotAnnotation);
+                } else if (parameterAnnotations.contains(SlotAt.class)) {
+                    SlotAt slotAtAnnotation = parameterAnnotations.get(SlotAt.class);
+                    provider = ParameterProviders.createSlotProvider(slotAtAnnotation);
                 } else if (parameterAnnotations.contains(LabelledSlots.class)) {
                     LabelledSlots slotsAnnotation = parameterAnnotations.get(LabelledSlots.class);
                     provider = ParameterProviders.createSlotsProvider(slotsAnnotation);
