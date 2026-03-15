@@ -9,7 +9,7 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.lushplugins.chatcolorhandler.ModernChatColorHandler;
+import org.lushplugins.chatcolorhandler.paper.PaperColor;
 import org.lushplugins.guihandler.GuiHandler;
 import org.lushplugins.guihandler.slot.*;
 import org.lushplugins.guihandler.slot.SlotAction;
@@ -429,10 +429,10 @@ public class Gui {
             Inventory inventory;
             Slot[] slots;
             if (this.inventoryType == InventoryType.CHEST) {
-                inventory = Bukkit.getServer().createInventory(null, this.size, ModernChatColorHandler.translate(title, player));
+                inventory = Bukkit.getServer().createInventory(null, this.size, PaperColor.handler().translate(title, player));
                 slots = new Slot[this.size];
             } else {
-                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, ModernChatColorHandler.translate(title, player));
+                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, PaperColor.handler().translate(title, player));
                 slots = new Slot[this.inventoryType.getDefaultSize()];
             }
 
