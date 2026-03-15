@@ -9,7 +9,7 @@ allprojects {
     apply(plugin = "com.gradleup.shadow")
 
     group = "org.lushplugins"
-    version = "2.0.0-alpha.6"
+    version = "2.0.0-alpha.7"
 
     repositories {
         mavenLocal()
