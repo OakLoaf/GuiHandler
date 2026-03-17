@@ -2,6 +2,7 @@ package org.lushplugins.guihandler.parameter;
 
 import org.bukkit.inventory.Inventory;
 import org.lushplugins.guihandler.GuiHandler;
+import org.lushplugins.guihandler.annotation.Provided;
 import org.lushplugins.guihandler.annotation.SlotAt;
 import org.lushplugins.guihandler.annotation.LabelledSlots;
 import org.lushplugins.guihandler.gui.Gui;
@@ -20,15 +21,17 @@ public class ParameterProviders {
         ParameterProvider.Factory.forType(Inventory.class, (type, context) -> context.gui().inventory())
     );
 
-    public static final ParameterProvider<?> PROVIDED_TYPE = (type, context) -> context.gui().provided(type);
+    public static ParameterProvider<?> providedType(Provided annotation, Class<?> providedType) {
+        String key = annotation.value().equals(Provided.CLASS_KEY) ? providedType.getName() : annotation.value();
+        return (type, context) -> context.gui().provided(key, type);
+    }
 
-
-    public static ParameterProvider<?> createSlotProvider(SlotAt annotation) {
+    public static ParameterProvider<?> slotProvider(SlotAt annotation) {
         int rawSlot = annotation.value();
         return (type, context) -> context.gui().slot(rawSlot);
     }
 
-    public static ParameterProvider<?> createSlotsProvider(LabelledSlots annotation) {
+    public static ParameterProvider<?> slotsProvider(LabelledSlots annotation) {
         char[] labels = annotation.value();
 
         if (labels.length == 1 && labels[0] == LabelledSlots.DEFAULT_LABEL) {

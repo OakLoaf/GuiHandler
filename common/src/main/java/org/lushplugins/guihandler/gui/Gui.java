@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Gui {
     private final GuiHandler instance;
@@ -29,8 +28,8 @@ public class Gui {
     private final boolean locked;
     private final Map<Character, LabelledSlotProvider> labelProviders;
     private final Multimap<GuiAction, GuiAction.Callable> actions;
-    private final Map<Class<?>, Object> provided;
-    // Consider replacing with a GuiData class to allow users to add custom data fields
+    private final Map<String, Object> providedValues;
+    // Consider migrating to a provided value
     private int page = 1;
 
     private Gui(
@@ -41,7 +40,7 @@ public class Gui {
         boolean locked,
         Map<Character, LabelledSlotProvider> labelProviders,
         Multimap<GuiAction, GuiAction.Callable> actions,
-        Map<Class<?>, Object> provided
+        Map<String, Object> providedValues
     ) {
         this.instance = instance;
         this.actor = actor;
@@ -50,7 +49,7 @@ public class Gui {
         this.locked = locked;
         this.labelProviders = labelProviders;
         this.actions = actions;
-        this.provided = provided;
+        this.providedValues = providedValues;
 
         refreshLabelIndexes();
         open();
@@ -82,10 +81,13 @@ public class Gui {
         return this.slots[slot];
     }
 
-    public <T> @Nullable T provided(Class<T> typeClass) {
-        Object providedObject = this.provided.get(typeClass);
-        //noinspection unchecked
-        return providedObject != null ? (T) providedObject : null;
+    public <T> @Nullable T provided(String key, Class<T> type) {
+        Object providedObject = this.providedValues.get(key);
+        return providedObject != null ? type.cast(providedObject) : null;
+    }
+
+    public <T> @Nullable T provided(Class<T> type) {
+        return provided(type.getName(), type);
     }
 
     private void refreshLabelIndexes() {
@@ -271,7 +273,7 @@ public class Gui {
     }
 
     public static class Builder {
-        public static final GuiConstructor<Gui> DEFAULT_GUI_CONSTRUCTOR = (builder, player, inventory, slots, providedMap) -> new Gui(
+        public static final Constructor<Gui> DEFAULT_GUI_CONSTRUCTOR = (builder, player, inventory, slots, providedValues) -> new Gui(
             builder.instance(),
             new GuiActor(player),
             inventory,
@@ -279,7 +281,7 @@ public class Gui {
             builder.locked(),
             builder.labelledSlotProviders(),
             builder.actions(),
-            providedMap
+            providedValues
         );
 
         private final GuiHandler instance;
@@ -417,33 +419,78 @@ public class Gui {
             return this;
         }
 
-        public Gui open(Player player, Object... provided) {
-            return openWith(player, this.title, provided);
+        public <T extends Gui> Gui.Preparing<T> prepare(Constructor<T> constructor) {
+            return new Preparing<>(this, constructor);
         }
 
-        public Gui openWith(Player player, String title, Object... provided) {
-            return openWith(player, title, DEFAULT_GUI_CONSTRUCTOR, provided);
+        public Gui.Preparing<Gui> prepare() {
+            return prepare(DEFAULT_GUI_CONSTRUCTOR);
         }
 
-        public <T extends Gui> T openWith(Player player, String title, GuiConstructor<T> guiConstructor, Object... provided) {
+        public Gui open(Player player) {
+            return prepare().open(player);
+        }
+    }
+
+    @FunctionalInterface
+    public interface Constructor<T extends Gui> {
+        T construct(Builder builder, Player player, Inventory inventory, Slot[] slots, Map<String, Object> providedValues);
+    }
+
+    public static class Preparing<T extends Gui> {
+        private final Gui.Builder builder;
+        private final Constructor<T> constructor;
+        private String title;
+        private final Map<String, Object> providedValues = new HashMap<>();
+
+        private Preparing(Gui.Builder builder, Constructor<T> constructor) {
+            this.builder = builder;
+            this.title = builder.title();
+            this.constructor = constructor;
+        }
+
+        public Preparing<T> title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Preparing<T> provide(String key, Object value) {
+            this.providedValues.put(key, value);
+            return this;
+        }
+
+        public Preparing<T> provide(Object value) {
+            return provide(value.getClass().getName(), value);
+        }
+
+        public Preparing<T> provide(Iterable<Object> values) {
+            for (Object value : values) {
+                provide(value);
+            }
+
+            return this;
+        }
+
+        public T open(Player player) {
             Inventory inventory;
             Slot[] slots;
-            if (this.inventoryType == InventoryType.CHEST) {
-                inventory = Bukkit.getServer().createInventory(null, this.size, PaperColor.handler().translate(title, player));
-                slots = new Slot[this.size];
+            if (builder.inventoryType() == InventoryType.CHEST) {
+                int size = builder.size();
+                inventory = Bukkit.getServer().createInventory(null, size, PaperColor.handler().translate(title, player));
+                slots = new Slot[size];
             } else {
-                inventory = Bukkit.getServer().createInventory(null, this.inventoryType, PaperColor.handler().translate(title, player));
-                slots = new Slot[this.inventoryType.getDefaultSize()];
+                inventory = Bukkit.getServer().createInventory(null, builder.inventoryType(), PaperColor.handler().translate(title, player));
+                slots = new Slot[builder.inventoryType().getDefaultSize()];
             }
 
             Map<Character, AtomicInteger> indexes = new HashMap<>();
             for (int rawSlot = 0; rawSlot < slots.length; rawSlot++) {
-                Character label = Optional.ofNullable(this.slots.get(rawSlot)).orElse(' ');
+                Character label = Optional.ofNullable(builder.slots.get(rawSlot)).orElse(' ');
                 int labelIndex = indexes.computeIfAbsent(label, ignored -> new AtomicInteger()).getAndIncrement();
                 Slot slot = new Slot(rawSlot, label, labelIndex);
 
-                SlotProvider provider = Optional.ofNullable(this.providers.get(label))
-                    .orElseGet(() -> this.instance.getDefaultProvider(label));
+                SlotProvider provider = Optional.ofNullable(builder.providers.get(label))
+                    .orElseGet(() -> builder.instance().getDefaultProvider(label));
                 if (provider != null) {
                     slot.slotProvider(provider);
                 }
@@ -451,19 +498,7 @@ public class Gui {
                 slots[rawSlot] = slot;
             }
 
-            Map<Class<?>, Object> providedMap = Stream.of(provided)
-                .collect(Collectors.toMap(
-                    Object::getClass,
-                    obj -> obj,
-                    (existing, replacement) -> existing
-                ));
-
-            return guiConstructor.construct(this, player, inventory, slots, providedMap);
+            return this.constructor.construct(builder, player, inventory, slots, providedValues);
         }
-    }
-
-    @FunctionalInterface
-    public interface GuiConstructor<T extends Gui> {
-        T construct(Builder builder, Player player, Inventory inventory, Slot[] slots, Map<Class<?>, Object> provided);
     }
 }

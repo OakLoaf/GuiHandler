@@ -7,4 +7,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface Provided {}
+public @interface Provided {
+    String CLASS_KEY = "_object-type";
+
+    /**
+     * @return key of provided object
+     */
+    String value() default CLASS_KEY;
+}
