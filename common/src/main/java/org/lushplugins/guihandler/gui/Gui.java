@@ -273,17 +273,6 @@ public class Gui {
     }
 
     public static class Builder {
-        public static final Constructor<Gui> DEFAULT_GUI_CONSTRUCTOR = (builder, player, inventory, slots, providedValues) -> new Gui(
-            builder.instance(),
-            new GuiActor(player),
-            inventory,
-            slots,
-            builder.locked(),
-            builder.labelledSlotProviders(),
-            builder.actions(),
-            providedValues
-        );
-
         private final GuiHandler instance;
         private InventoryType inventoryType = InventoryType.CHEST;
         private int size = 27;
@@ -424,7 +413,7 @@ public class Gui {
         }
 
         public Gui.Preparing<Gui> prepare() {
-            return prepare(DEFAULT_GUI_CONSTRUCTOR);
+            return prepare(Constructor.DEFAULT);
         }
 
         public Gui open(Player player) {
@@ -434,6 +423,17 @@ public class Gui {
 
     @FunctionalInterface
     public interface Constructor<T extends Gui> {
+        Constructor<Gui> DEFAULT = (builder, player, inventory, slots, providedValues) -> new Gui(
+            builder.instance(),
+            new GuiActor(player),
+            inventory,
+            slots,
+            builder.locked(),
+            builder.labelledSlotProviders(),
+            builder.actions(),
+            providedValues
+        );
+
         T construct(Builder builder, Player player, Inventory inventory, Slot[] slots, Map<String, Object> providedValues);
     }
 
