@@ -8,3 +8,14 @@ dependencies {
     implementation("org.lushplugins.lushlib:common:1.0.0")
     implementation("org.lushplugins.lushlib:utils:1.0.0")
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = rootProject.group.toString() + ".guihandler"
+            artifactId = rootProject.name + "-" + project.name
+            version = rootProject.version.toString()
+            from(project.components["java"])
+        }
+    }
+}
