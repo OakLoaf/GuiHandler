@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lushplugins.guihandler.config.slot.SlotConfig;
 import org.lushplugins.guihandler.gui.Gui;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class GuiConfig {
             .collect(Collectors.toMap(
                 entry -> entry.getKey().charAt(0),
                 entry -> new SlotConfig((ConfigurationSection) entry.getValue())
-            )) : null;
+            )) : Collections.emptyMap();
     }
 
     public String title() {
