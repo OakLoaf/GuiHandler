@@ -81,12 +81,12 @@ public class Gui {
         return this.slots[slot];
     }
 
-    public <T> @Nullable T provided(String key, Class<T> type) {
+    public <T> T provided(String key, Class<T> type) {
         Object providedObject = this.providedValues.get(key);
         return providedObject != null ? type.cast(providedObject) : null;
     }
 
-    public <T> @Nullable T provided(Class<T> type) {
+    public <T> T provided(Class<T> type) {
         return provided(type.getName(), type);
     }
 
