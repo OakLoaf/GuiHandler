@@ -1,6 +1,6 @@
 dependencies {
     // Libraries
-    implementation("org.lushplugins.chatcolorhandler:paper:7.0.0")
+    implementation("org.lushplugins.chatcolorhandler:paper:8.1.0")
 }
 
 tasks {
