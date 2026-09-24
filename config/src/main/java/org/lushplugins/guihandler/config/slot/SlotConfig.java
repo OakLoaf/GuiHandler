@@ -7,10 +7,12 @@ import org.lushplugins.guihandler.slot.SlotAction;
 public class SlotConfig {
     private final IconConfig icon;
     private final SlotAction action;
+    private final Character fallback;
 
     public SlotConfig(ConfigurationSection config) {
         this.icon = readIcon(config, "icon");
         this.action = readAction(config, "action");
+        this.fallback = config.isString("fallback") ? config.getString("fallback").charAt(0) : null;
     }
 
     public IconConfig icon() {
@@ -19,6 +21,10 @@ public class SlotConfig {
 
     public SlotAction action() {
         return action;
+    }
+
+    public Character fallback() {
+        return fallback;
     }
 
     public static IconConfig readIcon(ConfigurationSection config, String path) {
