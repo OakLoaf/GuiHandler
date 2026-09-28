@@ -342,6 +342,10 @@ public class Gui {
             return providers;
         }
 
+        public @Nullable SlotProvider getSlotProviderFor(char label) {
+            return providers.get(label);
+        }
+
         public Builder setSlotProviderFor(char label, SlotProvider provider) {
             this.providers.put(label, provider);
             return this;

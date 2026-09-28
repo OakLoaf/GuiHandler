@@ -5,6 +5,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 import org.lushplugins.guihandler.config.slot.SlotConfig;
 import org.lushplugins.guihandler.gui.Gui;
+import org.lushplugins.guihandler.slot.SlotProvider;
+import org.lushplugins.lushlib.item.DisplayItemStack;
 
 import java.util.Collections;
 import java.util.List;
@@ -72,11 +74,19 @@ public class GuiConfig {
         builder.size(this.size());
         this.slotMap().forEach((label, slotIndex) -> builder.slot(slotIndex, label));
         slots.forEach((label, slot) -> {
-            if (!builder.hasIconFor(label)) {
+            SlotProvider currProvider = builder.getSlotProviderFor(label);
+            if (currProvider == null || !currProvider.hasIcon()) {
                 builder.setIconFor(label, slot.icon());
+            } else {
+                builder.setIconFor(label, (context) -> {
+                    DisplayItemStack.Builder currIcon = DisplayItemStack.builder(currProvider.icon(context));
+                    return slot.icon().overwrite(currIcon)
+                        .build()
+                        .asItemStack(context.gui().actor().player());
+                });
             }
 
-            if (!builder.hasActionFor(label)) {
+            if (currProvider == null || !currProvider.hasAction()) {
                 builder.setActionFor(label, slot.action());
             }
         });
