@@ -171,7 +171,7 @@ public class Gui {
         }
 
         int rawSlot = event.getRawSlot();
-        if (rawSlot <= this.slots.length) {
+        if (rawSlot < this.slots.length) {
             try {
                 Slot slot = this.slot(rawSlot);
                 slot.click(this, event);
