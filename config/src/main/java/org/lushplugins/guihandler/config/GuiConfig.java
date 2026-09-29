@@ -3,6 +3,7 @@ package org.lushplugins.guihandler.config;
 import com.google.common.collect.TreeMultimap;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
+import org.lushplugins.guihandler.GuiHandler;
 import org.lushplugins.guihandler.config.slot.SlotConfig;
 import org.lushplugins.guihandler.gui.Gui;
 import org.lushplugins.guihandler.slot.SlotProvider;
@@ -92,5 +93,9 @@ public class GuiConfig {
         });
 
         return builder;
+    }
+
+    public Gui.Builder create(GuiHandler instance) {
+        return applyTo(Gui.builder(instance));
     }
 }
