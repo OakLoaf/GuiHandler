@@ -33,13 +33,14 @@ public class SlotConfig {
 
     public static SlotAction readAction(ConfigurationSection config, String path) {
         if (config.isConfigurationSection(path)) {
-            String type = config.getString("type");
+            ConfigurationSection actionSection = config.getConfigurationSection(path);
+            String type = actionSection.getString("type");
             if (type == null) {
-                type = SlotActionRegistry.getDefaultAction(config.getName());
+                type = SlotActionRegistry.getDefaultAction(actionSection.getName());
             }
 
             if (type != null) {
-                return SlotActionRegistry.construct(type, config.getConfigurationSection(path));
+                return SlotActionRegistry.construct(type, actionSection);
             }
         } else if (config.isString(path)) {
             String type = config.getString(path);
