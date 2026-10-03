@@ -19,11 +19,11 @@ public interface PagedGui<T> {
 
     Stream<T> getContentStream(Gui gui);
 
-    Comparator<T> getContentSortMethod();
+    Comparator<T> getContentSortMethod(Gui gui);
 
     default Stream<T> getPageContentStream(Gui gui, int page, int pageSize) {
         return getContentStream(gui)
-            .sorted(this.getContentSortMethod())
+            .sorted(this.getContentSortMethod(gui))
             .skip((long) (page - 1) * pageSize)
             .limit(pageSize);
     }
