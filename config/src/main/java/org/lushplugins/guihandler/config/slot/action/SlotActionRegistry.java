@@ -13,8 +13,8 @@ public class SlotActionRegistry {
     private static final Map<String, String> defaultActions = new ConcurrentHashMap<>();
 
     static {
-        register("next_page", '>', (ignored) -> new NextPageSlotAction());
-        register("previous_page", '<', (ignored) -> new PreviousPageSlotAction());
+        register("next_page", '>', new NextPageSlotAction());
+        register("previous_page", '<', new PreviousPageSlotAction());
     }
 
     public static String getDefaultAction(String label) {
