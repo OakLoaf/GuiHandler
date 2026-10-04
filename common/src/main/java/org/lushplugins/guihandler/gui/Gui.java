@@ -49,7 +49,7 @@ public class Gui {
         this.locked = locked;
         this.labelProviders = labelProviders;
         this.actions = actions;
-        this.providedValues = providedValues;
+        this.providedValues = new HashMap<>(providedValues);
 
         refreshLabelIndexes();
         open();
@@ -79,6 +79,14 @@ public class Gui {
 
     public Slot slot(int slot) {
         return this.slots[slot];
+    }
+
+    public void provide(String key, Object value) {
+        this.providedValues.put(key, value);
+    }
+
+    public void provide(Object value) {
+        provide(value.getClass().getName(), value);
     }
 
     public <T> T provided(String key, Class<T> type) {
