@@ -39,6 +39,14 @@ public class SlotActionRegistry {
         defaultActions.put(String.valueOf(label), type);
     }
 
+    public static void register(String type, SlotAction action) {
+        register(type, (ignored) -> action);
+    }
+
+    public static void register(String type, char label, SlotAction action) {
+        register(type, label, (ignored) -> action);
+    }
+
     public static void unregister(String type) {
         types.remove(type);
     }
