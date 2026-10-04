@@ -29,8 +29,6 @@ public class Gui {
     private final Map<Character, LabelledSlotProvider> labelProviders;
     private final Multimap<GuiAction, GuiAction.Callable> actions;
     private final Map<String, Object> providedValues;
-    // Consider migrating to a provided value
-    private int page = 1;
 
     private Gui(
         GuiHandler instance,
@@ -81,14 +79,6 @@ public class Gui {
         return this.slots[slot];
     }
 
-    public void provide(String key, Object value) {
-        this.providedValues.put(key, value);
-    }
-
-    public void provide(Object value) {
-        provide(value.getClass().getName(), value);
-    }
-
     public <T> T provided(String key, Class<T> type) {
         Object providedObject = this.providedValues.get(key);
         return providedObject != null ? type.cast(providedObject) : null;
@@ -96,6 +86,18 @@ public class Gui {
 
     public <T> T provided(Class<T> type) {
         return provided(type.getName(), type);
+    }
+
+    public <T> void provide(String key, T value) {
+        this.providedValues.put(key, value);
+    }
+
+    public <T> void provide(String key, Class<T> type, T value) {
+        provide(key, value);
+    }
+
+    public <T> void provide(Class<T> type, T value) {
+        provide(type.getName(), value);
     }
 
     private void refreshLabelIndexes() {
@@ -117,22 +119,22 @@ public class Gui {
     }
 
     public int page() {
-        return this.page;
+        return provided("page", Integer.class);
     }
 
     public void page(int page) {
-        if (this.page != page) {
-            this.page = page;
+        if (page() != page) {
+            provide("page", Integer.class, page);
             refresh();
         }
     }
 
     public void nextPage() {
-        this.page(this.page + 1);
+        this.page(page() + 1);
     }
 
     public void previousPage() {
-        this.page(this.page - 1);
+        this.page(page() - 1);
     }
 
     protected void open() {
