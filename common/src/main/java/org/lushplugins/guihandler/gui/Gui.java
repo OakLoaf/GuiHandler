@@ -100,6 +100,10 @@ public class Gui {
         provide(type.getName(), value);
     }
 
+    public void provide(Object value) {
+        provide(value.getClass().getName(), value);
+    }
+
     private void refreshLabelIndexes() {
         Map<Character, AtomicInteger> indexes = new HashMap<>();
 
