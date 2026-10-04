@@ -123,7 +123,8 @@ public class Gui {
     }
 
     public int page() {
-        return provided("page", Integer.class);
+        Integer page = provided("page", Integer.class);
+        return page != null ? page : 1;
     }
 
     public void page(int page) {
