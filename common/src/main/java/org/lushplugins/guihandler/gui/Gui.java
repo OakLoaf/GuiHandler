@@ -1,7 +1,5 @@
 package org.lushplugins.guihandler.gui;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,15 +9,18 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.lushplugins.chatcolorhandler.paper.PaperColor;
 import org.lushplugins.guihandler.GuiHandler;
+import org.lushplugins.guihandler.gui.event.*;
 import org.lushplugins.guihandler.slot.*;
 import org.lushplugins.guihandler.slot.SlotAction;
 import org.lushplugins.guihandler.slot.SlotIcon;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+// TODO: Allow re-opening guis
 public class Gui {
     private final GuiHandler instance;
     private final Inventory inventory;
@@ -27,7 +28,7 @@ public class Gui {
     private final GuiActor actor;
     private final boolean locked;
     private final Map<Character, LabelledSlotProvider> labelProviders;
-    private final Multimap<GuiAction, GuiAction.Callable> actions;
+    private final GuiListeners listeners;
     private final Map<String, Object> providedValues;
 
     private Gui(
@@ -37,7 +38,7 @@ public class Gui {
         Slot[] slots,
         boolean locked,
         Map<Character, LabelledSlotProvider> labelProviders,
-        Multimap<GuiAction, GuiAction.Callable> actions,
+        GuiListeners listeners,
         Map<String, Object> providedValues
     ) {
         this.instance = instance;
@@ -46,7 +47,7 @@ public class Gui {
         this.slots = slots;
         this.locked = locked;
         this.labelProviders = labelProviders;
-        this.actions = actions;
+        this.listeners = listeners;
         this.providedValues = new HashMap<>(providedValues);
 
         refreshLabelIndexes();
@@ -77,6 +78,10 @@ public class Gui {
 
     public Slot slot(int slot) {
         return this.slots[slot];
+    }
+
+    public Map<String, Object> providedValues() {
+        return this.providedValues;
     }
 
     public <T> T provided(String key, Class<T> type) {
@@ -153,15 +158,16 @@ public class Gui {
         }
 
         this.instance.setOpenGui(player.getUniqueId(), this);
-        callAction(GuiAction.CLOSE);
+        callEvent(new GuiOpenEvent(this));
     }
 
     public void refresh(Slot slot) {
         this.inventory.setItem(slot.rawSlot(), slot.icon(this));
+        callEvent(new GuiSlotRefreshEvent(this, slot));
     }
 
     public void refresh() {
-        callAction(GuiAction.REFRESH);
+        callEvent(new GuiRefreshEvent(this));
 
         Arrays.stream(this.slots)
             .collect(Collectors.groupingBy(Slot::label))
@@ -176,7 +182,7 @@ public class Gui {
             refresh(slot);
         }
 
-        callAction(GuiAction.POST_REFRESH);
+        callEvent(new GuiPostRefreshEvent(this));
     }
 
     public void onClick(InventoryClickEvent event) {
@@ -276,11 +282,11 @@ public class Gui {
     }
 
     public void onClose(InventoryCloseEvent event) {
-        callAction(GuiAction.CLOSE);
+        callEvent(new GuiCloseEvent(this));
     }
 
-    private void callAction(GuiAction action) {
-        this.actions.get(action).forEach(method -> method.call(new GuiContext(this)));
+    private void callEvent(GuiEvent event) {
+        this.listeners.call(event);
     }
 
     public static Builder builder(GuiHandler instance) {
@@ -295,7 +301,7 @@ public class Gui {
         private boolean locked = false;
         private final List<Character> slots = new ArrayList<>();
         private final Map<Character, SlotProvider> providers = new HashMap<>();
-        private final Multimap<GuiAction, GuiAction.Callable> actions = HashMultimap.create();
+        private final GuiListeners listeners = new GuiListeners();
         private final Map<Character, LabelledSlotProvider> labelProviders = new HashMap<>();
 
         private Builder(GuiHandler instance) {
@@ -413,17 +419,17 @@ public class Gui {
             return this;
         }
 
-        public Multimap<GuiAction, GuiAction.Callable> actions() {
-            return actions;
+        public GuiListeners listeners() {
+            return listeners;
         }
 
-        public Builder addAction(GuiAction action, GuiAction.Callable callable) {
-            this.actions.put(action, callable);
+        public <T extends GuiEvent> Builder registerListener(Class<T> eventClass, Consumer<? super GuiEvent> listener) {
+            this.listeners.register(eventClass, listener);
             return this;
         }
 
-        public Builder clearActions() {
-            this.actions.clear();
+        public Builder unregisterListeners() {
+            this.listeners.unregisterAll();
             return this;
         }
 
@@ -449,7 +455,7 @@ public class Gui {
             slots,
             builder.locked(),
             builder.labelledSlotProviders(),
-            builder.actions(),
+            builder.listeners(),
             providedValues
         );
 
@@ -485,6 +491,14 @@ public class Gui {
         public Preparing<T> provide(Iterable<Object> values) {
             for (Object value : values) {
                 provide(value);
+            }
+
+            return this;
+        }
+
+        public Preparing<T> provide(Map<String, Object> values) {
+            for (Map.Entry<String, Object> entry : values.entrySet()) {
+                provide(entry.getKey(), entry.getValue());
             }
 
             return this;

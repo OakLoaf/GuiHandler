@@ -1,12 +1,14 @@
 package org.lushplugins.guihandler.parameter;
 
+import org.jetbrains.annotations.Nullable;
+import org.lushplugins.guihandler.gui.event.GuiEvent;
 import org.lushplugins.guihandler.slot.SlotContext;
 
 import java.util.Map;
 
 @FunctionalInterface
 public interface ParameterProvider<T> {
-    T collect(Class<T> typeClass, SlotContext context);
+    T collect(Class<T> typeClass, @Nullable GuiEvent event, SlotContext context);
 
     class Factory {
 

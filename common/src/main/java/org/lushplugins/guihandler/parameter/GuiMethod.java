@@ -1,5 +1,7 @@
 package org.lushplugins.guihandler.parameter;
 
+import org.jetbrains.annotations.Nullable;
+import org.lushplugins.guihandler.gui.event.GuiEvent;
 import org.lushplugins.guihandler.slot.SlotContext;
 import org.lushplugins.guihandler.util.reflect.MethodCaller;
 
@@ -17,9 +19,9 @@ public class GuiMethod {
         this.parameterProviders = parameterProviders;
     }
 
-    public <T> T call(SlotContext context) {
+    public <T> T call(@Nullable GuiEvent event, SlotContext context) {
         Object[] arguments = this.parameterProviders.values().stream()
-            .map(provider -> provider.asObject(context))
+            .map(provider -> provider.asObject(event, context))
             .toArray();
 
         //noinspection unchecked

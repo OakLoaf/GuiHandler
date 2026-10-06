@@ -3,7 +3,7 @@ package org.lushplugins.guihandler.annotation;
 import org.jetbrains.annotations.NotNull;
 import org.lushplugins.guihandler.GuiHandler;
 import org.lushplugins.guihandler.gui.Gui;
-import org.lushplugins.guihandler.gui.GuiAction;
+import org.lushplugins.guihandler.gui.event.GuiEvent;
 import org.lushplugins.guihandler.parameter.GuiMethod;
 import org.lushplugins.guihandler.parameter.GuiParameter;
 import org.lushplugins.guihandler.parameter.ParameterProvider;
@@ -68,6 +68,8 @@ public class AnnotationHandler {
                 } else if (parameterAnnotations.contains(LabelledSlots.class)) {
                     LabelledSlots slotsAnnotation = parameterAnnotations.get(LabelledSlots.class);
                     provider = ParameterProviders.slotsProvider(slotsAnnotation);
+                } else if (GuiEvent.class.isAssignableFrom(parameter.getType())) {
+                    provider = (type, event, context) -> event;
                 } else {
                     provider = ParameterProviders.DEFAULT_PROVIDERS.get(parameter.getType());
                     if (provider == null) {
@@ -83,17 +85,17 @@ public class AnnotationHandler {
             if (annotations.contains(SlotActionProvider.class)) {
                 SlotActionProvider methodAnnotation = annotations.get(SlotActionProvider.class);
                 for (char label : methodAnnotation.value()) {
-                    builder.setActionFor(label, (context, event) -> guiMethod.call(context));
+                    builder.setActionFor(label, (context, event) -> guiMethod.call(null, context));
                 }
             } else if (annotations.contains(SlotIconProvider.class)) {
                 SlotIconProvider methodAnnotation = annotations.get(SlotIconProvider.class);
                 for (char label : methodAnnotation.value()) {
-                    builder.setIconFor(label, guiMethod::call);
+                    builder.setIconFor(label, context -> guiMethod.call(null, context));
                 }
-            } else if (annotations.contains(GuiActionHandler.class)) {
-                GuiActionHandler methodAnnotation = annotations.get(GuiActionHandler.class);
-                GuiAction action = methodAnnotation.value();
-                builder.addAction(action, (context) -> guiMethod.call(new SlotContext(context.gui(), null)));
+            } else if (annotations.contains(GuiEventListener.class)) {
+                //noinspection unchecked - if this is not the case then an error should be thrown
+                Class<? extends GuiEvent> eventClass = (Class<? extends GuiEvent>) method.getParameterTypes()[0];
+                builder.registerListener(eventClass, (event) -> guiMethod.call(event, new SlotContext(event.gui(), null)));
             }
         }
 
@@ -103,6 +105,6 @@ public class AnnotationHandler {
     private static boolean containsGuiAnnotation(AnnotationList annotations) {
         return annotations.contains(SlotActionProvider.class)
             || annotations.contains(SlotIconProvider.class)
-            || annotations.contains(GuiActionHandler.class);
+            || annotations.contains(GuiEventListener.class);
     }
 }

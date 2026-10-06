@@ -14,32 +14,32 @@ import java.util.Map;
 
 public class ParameterProviders {
     public static final Map<Class<?>, ParameterProvider<?>> DEFAULT_PROVIDERS = Map.ofEntries(
-        ParameterProvider.Factory.forType(SlotContext.class, (type, context) -> context),
-        ParameterProvider.Factory.forType(InventoryClickEvent.class, (type, context) -> context.clickEvent()),
-        ParameterProvider.Factory.forType(GuiHandler.class, (type, context) -> context.gui().instance()),
-        ParameterProvider.Factory.forType(Gui.class, (type, context) -> context.gui()),
-        ParameterProvider.Factory.forType(org.lushplugins.guihandler.slot.Slot.class, (type, context) -> context.slot()),
-        ParameterProvider.Factory.forType(GuiActor.class, (type, context) -> context.gui().actor()),
-        ParameterProvider.Factory.forType(Inventory.class, (type, context) -> context.gui().inventory())
+        ParameterProvider.Factory.forType(SlotContext.class, (type, event, context) -> context),
+        ParameterProvider.Factory.forType(InventoryClickEvent.class, (type, event, context) -> context.clickEvent()),
+        ParameterProvider.Factory.forType(GuiHandler.class, (type, event, context) -> context.gui().instance()),
+        ParameterProvider.Factory.forType(Gui.class, (type, event, context) -> context.gui()),
+        ParameterProvider.Factory.forType(org.lushplugins.guihandler.slot.Slot.class, (type, event, context) -> context.slot()),
+        ParameterProvider.Factory.forType(GuiActor.class, (type, event, context) -> context.gui().actor()),
+        ParameterProvider.Factory.forType(Inventory.class, (type, event, context) -> context.gui().inventory())
     );
 
     public static ParameterProvider<?> providedType(Provided annotation, Class<?> providedType) {
         String key = annotation.value().equals(Provided.CLASS_KEY) ? providedType.getName() : annotation.value();
-        return (type, context) -> context.gui().provided(key, type);
+        return (type, event, context) -> context.gui().provided(key, type);
     }
 
     public static ParameterProvider<?> slotProvider(SlotAt annotation) {
         int rawSlot = annotation.value();
-        return (type, context) -> context.gui().slot(rawSlot);
+        return (type, event, context) -> context.gui().slot(rawSlot);
     }
 
     public static ParameterProvider<?> slotsProvider(LabelledSlots annotation) {
         char[] labels = annotation.value();
 
         if (labels.length == 1 && labels[0] == LabelledSlots.DEFAULT_LABEL) {
-            return (type, context) -> context.gui().slots();
+            return (type, event, context) -> context.gui().slots();
         } else {
-            return (type, context) -> context.gui().slots(slot -> {
+            return (type, event, context) -> context.gui().slots(slot -> {
                 for (char label : labels) {
                     if (label == slot.label()) {
                         return true;
